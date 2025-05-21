@@ -11,4 +11,10 @@
     </style>
 
     <style name="Theme.WeatherForecastApp" parent="Base.Theme.WeatherForecastApp" />
+
+    <style name="Theme.Earth3D.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
 </resources>
