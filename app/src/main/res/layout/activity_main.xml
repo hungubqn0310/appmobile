@@ -19,6 +19,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Container cho hiệu ứng nắng -->
+    <FrameLayout
+        android:id="@+id/sunContainer"
+        android:layout_width="700dp"
+        android:layout_height="1100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <FrameLayout
         android:id="@+id/notificationContainer"
         android:layout_width="48dp"

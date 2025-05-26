@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     ConstraintLayout rootLayout;
     FrameLayout rainContainer;
     RainView rainView;
+    FrameLayout sunContainer;
+    SunView sunView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +96,11 @@ public class MainActivity extends AppCompatActivity {
         notificationBadge = findViewById(R.id.notificationBadge);
         rootLayout = findViewById(R.id.rootLayout);
         rainContainer = findViewById(R.id.rainContainer);
+        sunContainer = findViewById(R.id.sunContainer);
 
-        // Khởi tạo hiệu ứng mưa
+        // Khởi tạo hiệu ứng mưa và nắng
         setupRainEffect();
+        setupSunEffect();
 
         // Luôn hiển thị red dot khi mở app
         notificationBadge.setVisibility(View.VISIBLE);
@@ -199,6 +203,12 @@ public class MainActivity extends AppCompatActivity {
         rainView = new RainView(this);
         rainContainer.addView(rainView);
         rainContainer.setVisibility(View.GONE);
+    }
+
+    private void setupSunEffect() {
+        sunView = new SunView(this);
+        sunContainer.addView(sunView);
+        sunContainer.setVisibility(View.GONE);
     }
 
     private boolean checkLocationPermission() {
@@ -347,24 +357,75 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateRainEffect(String weatherCondition) {
-        boolean isRaining = weatherCondition.toLowerCase().contains("mưa") ||
-                weatherCondition.toLowerCase().contains("rain");
+        String condition = weatherCondition.toLowerCase();
+        boolean isRaining = condition.contains("mưa") ||
+                condition.contains("rain") ||
+                condition.contains("drizzle") ||
+                condition.contains("shower");
+                
+        boolean isSunny = condition.contains("nắng") ||
+                condition.contains("sunny") ||
+                condition.contains("clear") ||
+                condition.contains("partly cloudy") ||
+                condition.contains("mây thưa") ||
+                condition.contains("mây rải rác") ||
+                condition.contains("fair");
+
+        // Kiểm tra thời gian hiện tại
+        boolean isDayTime = false;
+        String currentTime = tvDate.getText().toString();
+        if (currentTime.contains("Hôm nay,")) {
+            String[] parts = currentTime.split(" ");
+            if (parts.length >= 2) {
+                String timePart = parts[1];
+                String[] timeSplit = timePart.split(":");
+                if (timeSplit.length >= 1) {
+                    try {
+                        int hour = Integer.parseInt(timeSplit[0]);
+                        isDayTime = hour >= 6 && hour < 18;
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        Log.d("WeatherEffect", "Condition: " + weatherCondition);
+        Log.d("WeatherEffect", "IsRaining: " + isRaining);
+        Log.d("WeatherEffect", "IsSunny: " + isSunny);
+        Log.d("WeatherEffect", "IsDayTime: " + isDayTime);
 
         if (isRaining) {
             rainContainer.setVisibility(View.VISIBLE);
+            sunContainer.setVisibility(View.GONE);
             rainView.startRain();
             int intensity = 150;
-            if (weatherCondition.toLowerCase().contains("nhẹ") ||
-                    weatherCondition.toLowerCase().contains("light")) {
+            if (condition.contains("nhẹ") ||
+                    condition.contains("light") ||
+                    condition.contains("drizzle")) {
                 intensity = 80;
-            } else if (weatherCondition.toLowerCase().contains("to") ||
-                    weatherCondition.toLowerCase().contains("heavy")) {
+            } else if (condition.contains("to") ||
+                    condition.contains("heavy") ||
+                    condition.contains("shower")) {
                 intensity = 250;
             }
             rainView.setRainIntensity(intensity);
+        } else if (isSunny && isDayTime) { // Chỉ hiển thị nắng vào ban ngày
+            rainContainer.setVisibility(View.GONE);
+            sunContainer.setVisibility(View.VISIBLE);
+            sunView.startShining();
+            int intensity = 12; // Số lượng tia nắng mặc định
+            if (condition.contains("nắng gắt") ||
+                    condition.contains("hot") ||
+                    condition.contains("sunny")) {
+                intensity = 16;
+            }
+            sunView.setRayIntensity(intensity);
         } else {
             rainContainer.setVisibility(View.GONE);
+            sunContainer.setVisibility(View.GONE);
             rainView.stopRain();
+            sunView.stopShining();
         }
     }
 
@@ -627,12 +688,16 @@ public class MainActivity extends AppCompatActivity {
         if (rainContainer.getVisibility() == View.VISIBLE) {
             rainView.startRain();
         }
+        if (sunContainer.getVisibility() == View.VISIBLE) {
+            sunView.startShining();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         rainView.stopRain();
+        sunView.stopShining();
     }
 
     @Override
@@ -640,6 +705,9 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         if (rainView != null) {
             rainView.stopRain();
+        }
+        if (sunView != null) {
+            sunView.stopShining();
         }
     }
 }
