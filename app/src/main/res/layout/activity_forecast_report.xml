@@ -20,7 +20,6 @@
         android:drawableTint="#FFFFFF"
         android:textSize="22sp"
         android:textColor="@android:color/white"
-        android:layout_marginTop="20dp"
         android:layout_marginStart="18dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -30,8 +29,7 @@
         android:id="@+id/settings_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="18dp"
         android:src="@drawable/ic_settings"
         app:tint="#FFFFFF"
         android:contentDescription="Settings button"
@@ -46,38 +44,36 @@
         android:text="Sep, 12"
         android:textSize="22sp"
         android:textColor="@android:color/white"
-        android:layout_marginTop="20dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
     <TextView
         android:id="@+id/today"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:layout_marginStart="20dp"
-        android:padding="8dp"
+        android:layout_marginTop="32dp"
         android:text="Today"
         android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/horizontalScrollView"
-        app:layout_constraintTop_toBottomOf="@id/back_button"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintTop_toBottomOf="@id/date_label"
+        app:layout_constraintBottom_toTopOf="@id/horizontalScrollView"
         app:layout_constraintStart_toStartOf="parent" />
 
     <HorizontalScrollView
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:paddingStart="16dp"
-        android:paddingTop="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="16dp"
+        android:padding="20dp"
         android:scrollbars="none"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintTop_toBottomOf="@id/today"
+        app:layout_constraintBottom_toTopOf="@id/next_forecast_title"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/back_button">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <!-- CHỈ MỘT view con duy nhất -->
         <LinearLayout
@@ -753,27 +749,27 @@
         android:id="@+id/next_forecast_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="20dp"
-        android:padding="8dp"
         android:text="Next Forecast"
         android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/next_forecast_list"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/horizontalScrollView" />
-    <!-- Next Forecast Section -->
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintTop_toBottomOf="@id/horizontalScrollView"
+        app:layout_constraintBottom_toTopOf="@id/next_forecast_list"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <ScrollView
         android:id="@+id/next_forecast_list"
         android:layout_width="match_parent"
-        android:layout_height="500dp"
-        android:layout_marginTop="32dp"
-        android:padding="16dp"
+        android:layout_height="0dp"
+        android:padding="20dp"
         android:scrollbars="none"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintTop_toBottomOf="@id/next_forecast_title"
+        app:layout_constraintBottom_toTopOf="@id/logo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/horizontalScrollView">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -1000,12 +996,11 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- AccuWeather Logo -->
     <TextView
         android:id="@+id/logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:drawableLeft="@drawable/logo"
         android:drawablePadding="8dp"
         android:text="Weather Forest"
@@ -1013,7 +1008,6 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/next_forecast_list" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

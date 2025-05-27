@@ -447,33 +447,33 @@ public class MainActivity extends AppCompatActivity {
         if (temperature >= 30) {
             suggestion.append("• Áo thun cotton nhẹ, thoáng khí<br>");
             suggestion.append("• Quần short/váy nhẹ<br>");
-            suggestion.append("• Mũ rộng vành để che nắng<br>");
+            suggestion.append("• Mũ rộng vành để che nắng");
 
             if (humidity > 70) {
-                suggestion.append("• Chọn vải cotton thoáng khí vì độ ẩm cao<br>");
+                suggestion.append("• Chọn vải cotton thoáng khí vì độ ẩm cao");
             }
         } else if (temperature >= 20) {
             suggestion.append("• Áo sơ mi hoặc áo thun nhẹ<br>");
-            suggestion.append("• Quần dài/váy dài mỏng<br>");
+            suggestion.append("• Quần dài/váy dài mỏng");
         } else if (temperature >= 10) {
             suggestion.append("• Áo khoác nhẹ hoặc cardigan<br>");
             suggestion.append("• Quần dài<br>");
-            suggestion.append("• Khăn quàng cổ mỏng<br>");
+            suggestion.append("• Khăn quàng cổ mỏng");
         } else {
             suggestion.append("• Áo khoác dày, đa lớp<br>");
             suggestion.append("• Mũ len, găng tay, khăn quàng cổ<br>");
-            suggestion.append("• Giày bốt<br>");
+            suggestion.append("• Giày bốt");
         }
 
         // Bổ sung dựa trên điều kiện thời tiết
         if (weatherCondition.toLowerCase().contains("mưa") ||
                 weatherCondition.toLowerCase().contains("rain")) {
             suggestion.append("• Mang theo ô/áo mưa<br>");
-            suggestion.append("• Giày không thấm nước<br>");
+            suggestion.append("• Giày không thấm nước");
         } else if (weatherCondition.toLowerCase().contains("nắng") ||
                 weatherCondition.toLowerCase().contains("sunny")) {
             suggestion.append("• Kính râm chống tia UV<br>");
-            suggestion.append("• Kem chống nắng SPF 50+<br>");
+            suggestion.append("• Kem chống nắng SPF 50+");
         }
 
         return suggestion.toString();
@@ -493,29 +493,29 @@ public class MainActivity extends AppCompatActivity {
         if (heatIndex > 40) {
             advice.append("• <b>CẢNH BÁO:</b> Nhiệt độ cực cao, tránh hoạt động ngoài trời!<br>");
             advice.append("• Nguy cơ say nắng, sốc nhiệt cao<br>");
-            advice.append("• Uống nhiều nước (3-4 lít/ngày)<br>");
+            advice.append("• Uống nhiều nước (3-4 lít/ngày)");
         } else if (heatIndex > 35) {
             advice.append("• Hạn chế hoạt động ngoài trời từ 11h-15h<br>");
             advice.append("• Uống ít nhất 2-3 lít nước/ngày<br>");
-            advice.append("• Nghỉ ngơi thường xuyên trong bóng râm<br>");
+            advice.append("• Nghỉ ngơi thường xuyên trong bóng râm");
         } else if (heatIndex > 30) {
             advice.append("• Uống đủ nước (2 lít/ngày)<br>");
-            advice.append("• Bôi kem chống nắng khi ra ngoài<br>");
+            advice.append("• Bôi kem chống nắng khi ra ngoài");
         } else if (temperature < 10) {
             advice.append("• Giữ ấm cơ thể, đặc biệt là đầu và bàn chân<br>");
-            advice.append("• Tránh thay đổi nhiệt độ đột ngột<br>");
+            advice.append("• Tránh thay đổi nhiệt độ đột ngột");
         }
 
         // Lời khuyên dựa trên điều kiện thời tiết
         if (weatherCondition.toLowerCase().contains("mưa") ||
                 weatherCondition.toLowerCase().contains("rain")) {
             advice.append("• Cẩn thận đường trơn trượt<br>");
-            advice.append("• Tránh để cơ thể bị ướt kéo dài<br>");
+            advice.append("• Tránh để cơ thể bị ướt kéo dài");
         }
 
         // Thêm lời khuyên về dị ứng nếu trời nhiều gió và độ ẩm cao
         if (humidity > 70) {
-            advice.append("• Người bị dị ứng phấn hoa cần đề phòng do độ ẩm cao<br>");
+            advice.append("• Người bị dị ứng phấn hoa cần đề phòng do độ ẩm cao");
         }
 
         return advice.toString();
@@ -551,13 +551,13 @@ public class MainActivity extends AppCompatActivity {
 
         impact.append("  - Tập thể dục: " + getScoreEmoji(exerciseScore) + "<br>");
         impact.append("  - Dã ngoại: " + getScoreEmoji(picnicScore) + "<br>");
-        impact.append("  - Bơi lội: " + getScoreEmoji(swimmingScore) + "<br>");
+        impact.append("  - Bơi lội: " + getScoreEmoji(swimmingScore));
 
         // Thời gian tốt nhất cho hoạt động
         if (temperature > 30) {
-            impact.append("• <b>Thời điểm tốt nhất để hoạt động:</b> Sáng sớm hoặc sau 17h<br>");
+            impact.append("• <b>Thời điểm tốt nhất để hoạt động:</b> Sáng sớm hoặc sau 17h");
         } else if (temperature < 10) {
-            impact.append("• <b>Thời điểm tốt nhất để hoạt động:</b> 10h-15h khi nhiệt độ cao nhất<br>");
+            impact.append("• <b>Thời điểm tốt nhất để hoạt động:</b> 10h-15h khi nhiệt độ cao nhất");
         }
 
         return impact.toString();
