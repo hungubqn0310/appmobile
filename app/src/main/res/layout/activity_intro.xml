@@ -13,14 +13,6 @@
         android:scaleType="centerCrop"
         android:src="@drawable/sky" />
 
-    <!-- Mặt trời ở giữa và quay -->
-    <ImageView
-        android:id="@+id/sun"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="115dp"
-        android:src="@drawable/sun"
-        android:scaleType="centerCrop" />
+
 
 </RelativeLayout>

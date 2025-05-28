@@ -40,7 +40,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class ForecastReportActivity extends AppCompatActivity {
-    private static final String API_KEY = "da7aaf6a73cd4196a8121617251005";
+    private static final String API_KEY = "07ccb22a4d5e482f8db72513252805";
     private static final String API_URL = "https://api.weatherapi.com/v1/forecast.json?key=" + API_KEY + "&q=Hanoi&days=7&aqi=no&alerts=no";
     private static final String TAG = "WeatherApp";
     private TextView dateLabel;

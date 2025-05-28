@@ -20,7 +20,6 @@
         android:drawableTint="#FFFFFF"
         android:textSize="22sp"
         android:textColor="@android:color/white"
-        android:layout_marginTop="20dp"
         android:layout_marginStart="18dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -30,7 +29,6 @@
         android:id="@+id/settings_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:src="@drawable/ic_settings"
         app:tint="#FFFFFF"
@@ -46,15 +44,29 @@
         android:text="Sep, 12"
         android:textSize="22sp"
         android:textColor="@android:color/white"
-        android:layout_marginTop="20dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <ScrollView
+        android:id="@+id/scrollViewInfo"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="60dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
     <TextView
         android:id="@+id/today"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:layout_marginStart="20dp"
         android:padding="8dp"
         android:text="Today"
@@ -69,7 +81,6 @@
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:paddingEnd="16dp"
@@ -753,7 +764,6 @@
         android:id="@+id/next_forecast_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="20dp"
         android:padding="8dp"
         android:text="Next Forecast"
@@ -764,11 +774,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/horizontalScrollView" />
     <!-- Next Forecast Section -->
-    <ScrollView
+    <LinearLayout
         android:id="@+id/next_forecast_list"
         android:layout_width="match_parent"
-        android:layout_height="500dp"
-        android:layout_marginTop="32dp"
+        android:layout_height="wrap_content"
         android:padding="16dp"
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
@@ -998,22 +1007,185 @@
             </LinearLayout>
 
         </LinearLayout>
+    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/chart1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="16dp"
+            android:background="@drawable/info_box_bg"
+            android:padding="24dp">
+            <!-- Đường cung mặt trời -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp">
+
+                <com.example.weatherforecastapp.SunArcView
+                    android:id="@+id/sunArcView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true" />
+
+            </RelativeLayout>
+            <!-- Phần mặt trời -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Bình minh -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Bình minh"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:alpha="0.8" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="05:15"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+                <!-- Hoàng hôn -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="end">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hoàng hôn"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:alpha="0.8" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="18:33"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/chart2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="16dp"
+            android:background="@drawable/info_box_bg"
+            android:padding="24dp">
+
+            <!-- Phần mặt trăng -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp">
+
+                <!-- Mặt trăng mọc -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mặt trăng mọc"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:alpha="0.8" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="05:55"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+                <!-- Hình mặt trăng ở giữa -->
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/ic_moon_phase"
+                    android:layout_gravity="center" />
+
+                <!-- Mặt trăng lặn -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="end">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mặt trăng lặn"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:alpha="0.8" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20:06"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Tên pha mặt trăng -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Trăng lưỡi liềm đầu tháng"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:alpha="0.8"
+                android:gravity="center"
+                android:layout_marginTop="12dp" />
+
+        </LinearLayout>
+    </LinearLayout>
     </ScrollView>
 
-    <!-- AccuWeather Logo -->
-    <TextView
-        android:id="@+id/logo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:drawableLeft="@drawable/logo"
-        android:drawablePadding="8dp"
-        android:text="Weather Forest"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/next_forecast_list" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

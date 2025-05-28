@@ -9,38 +9,42 @@
     android:background="@drawable/bg_gradient"
     android:padding="0dp">
 
+    <!-- Thêm guidelines -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/bottomGuideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_end="16dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalCenterGuideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
     <!-- Container cho hiệu ứng mưa -->
     <FrameLayout
         android:id="@+id/rainContainer"
         android:layout_width="700dp"
-        android:layout_height="1100dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Container cho hiệu ứng nắng -->
-    <FrameLayout
-        android:id="@+id/sunContainer"
-        android:layout_width="700dp"
-        android:layout_height="1100dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+    <!-- Phần header -->
     <FrameLayout
         android:id="@+id/notificationContainer"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Icon notification -->
         <ImageView
             android:id="@+id/ivNotification"
             android:layout_width="32dp"
@@ -50,7 +54,6 @@
             app:tint="#FFFFFF"
             android:contentDescription="Notification" />
 
-        <!-- Badge đỏ -->
         <View
             android:id="@+id/notificationBadge"
             android:layout_width="10dp"
@@ -66,8 +69,7 @@
         android:id="@+id/ivLove"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:padding="16dp"
+        android:padding="8dp"
         android:src="@drawable/ic_love_selector"
         android:clickable="true"
         android:focusable="true"
@@ -75,7 +77,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@id/notificationContainer" />
 
-    <!-- Tên thành phố -->
     <TextView
         android:id="@+id/tvCity"
         android:layout_width="wrap_content"
@@ -87,36 +88,36 @@
         android:drawableLeft="@drawable/ic_location"
         android:drawablePadding="8dp"
         android:drawableTint="#FFFFFF"
-        android:layout_marginTop="24dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Biểu tượng thời tiết -->
+    <!-- Phần content chính -->
     <ImageView
         android:id="@+id/ivWeatherIcon"
         android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.2"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/tvCity"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Khung thông tin thời tiết -->
     <LinearLayout
         android:id="@+id/weatherInfoBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/info_box_bg"
         android:gravity="center"
+        android:layout_marginBottom="8dp"
         android:orientation="vertical"
-        android:padding="24dp"
+        android:padding="16dp"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintTop_toBottomOf="@id/ivWeatherIcon"
         app:layout_constraintBottom_toTopOf="@id/btnForecast"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivWeatherIcon">
+        app:layout_constraintStart_toStartOf="parent">
 
         <TextView
             android:id="@+id/tvDate"
@@ -126,7 +127,6 @@
             android:text="Today, 11 May"
             android:textColor="#FFFFFF"
             android:textSize="20sp" />
-
 
         <TextView
             android:id="@+id/tvTemperature"
@@ -176,7 +176,6 @@
                 android:layout_column="1"
                 android:layout_gravity="right"
                 android:text="Tốc độ gió  |"
-
                 android:textColor="#FFFFFF"
                 android:textSize="20sp" />
 
@@ -226,7 +225,7 @@
 
     </LinearLayout>
 
-    <!-- Nút Forecast -->
+    <!-- Phần bottom -->
     <Button
         android:id="@+id/btnForecast"
         android:layout_width="wrap_content"
@@ -234,11 +233,10 @@
         android:backgroundTint="#FFFFFF"
         android:text="Forecast Report"
         android:textColor="#040303"
-        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/btnMyLocation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/weatherInfoBox" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/btnMyLocation"
@@ -247,11 +245,10 @@
         android:backgroundTint="#FFFFFF"
         android:text="My Location"
         android:textColor="#040303"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/tvSlide"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnForecast" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tvSlide"
@@ -262,8 +259,9 @@
         android:textSize="16sp"
         android:letterSpacing="0.05"
         android:fontFamily="sans-serif-medium"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/btnMyLocation"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomGuideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,10 +1,13 @@
 package com.example.weatherforecastapp;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,8 +15,10 @@ import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +46,7 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
     private GestureDetector gestureDetector;
     private FusedLocationProviderClient fusedLocationClient;
     private SharedPreferences sharedPreferences;
+    // SharedPreferences constants for favorite locations
     private static final String PREFS_NAME = "FavoriteLocationsPrefs";
     private static final String KEY_FAVORITE_CITIES = "favoriteCities";
 
@@ -48,12 +54,32 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.favorite_locations);
+
+        // Initialize SharedPreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
+        // Initialize animation
         TextView tvSlide = findViewById(R.id.tvSlide);
         Animation pulse = AnimationUtils.loadAnimation(this, R.anim.slide_left_to_right);
         tvSlide.startAnimation(pulse);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
+        // Initialize location client
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Setup settings button if exists
+        ImageView settingsButton = findViewById(R.id.settings_button);
+        if (settingsButton != null) {
+            settingsButton.setOnClickListener(v -> showSettingsPopup());
+        }
+
+        // Setup gesture detector for swipe navigation
+        setupGestureDetector();
+
+        // Setup location cards
+        setupLocationCards();
+    }
+
+    private void setupGestureDetector() {
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             private static final int SWIPE_THRESHOLD = 100;
             private static final int SWIPE_VELOCITY_THRESHOLD = 100;
@@ -75,14 +101,25 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
 
+    private void setupLocationCards() {
         LinearLayout locationContainer = findViewById(R.id.locationContainer);
 
-        // Lấy danh sách địa điểm yêu thích từ SharedPreferences
+        // Get favorite cities from SharedPreferences
         Set<String> favoriteCitiesSet = sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>());
         String[] favoriteCities = favoriteCitiesSet.toArray(new String[0]);
 
-        // Thêm "Vị trí của tôi"
+        // Add "My Location" card
+        addMyLocationCard(locationContainer);
+
+        // Add favorite location cards
+        for (String city : favoriteCities) {
+            addFavoriteLocationCard(locationContainer, city);
+        }
+    }
+
+    private void addMyLocationCard(LinearLayout locationContainer) {
         View myLocationCard = LayoutInflater.from(this).inflate(R.layout.location_card, locationContainer, false);
         TextView tvLocationTitle = myLocationCard.findViewById(R.id.tvLocationTitle);
         TextView tvCityName = myLocationCard.findViewById(R.id.tvCityName);
@@ -92,14 +129,17 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
         TextView tvHighTemp = myLocationCard.findViewById(R.id.tvHighTemp);
         TextView tvLowTemp = myLocationCard.findViewById(R.id.tvLowTemp);
 
+        // Set text based on language preference
         tvLocationTitle.setText("Vị trí của tôi");
         tvCityName.setText("Đang tải...");
+
         requestLocationAndFetchWeather(tvCityName, tvTime, tvWeatherStatus, tvTemperature, tvHighTemp, tvLowTemp);
 
-        // Thêm sự kiện click cho thẻ "Vị trí của tôi"
+        // Set click listener for my location card
         myLocationCard.setOnClickListener(v -> {
             Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
             String cityName = tvCityName.getText().toString();
+
             if (cityName.equals("Đang tải...") || cityName.equals("Không xác định được vị trí") || cityName.equals("Lỗi lấy vị trí")) {
                 intent.putExtra("SELECTED_CITY", "Hanoi");
                 Toast.makeText(this, "Không thể lấy vị trí hiện tại, sử dụng Hà Nội", Toast.LENGTH_SHORT).show();
@@ -112,37 +152,37 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
         });
 
         locationContainer.addView(myLocationCard);
+    }
 
-        // Thêm các địa điểm yêu thích
-        for (String city : favoriteCities) {
-            View cardView = LayoutInflater.from(this).inflate(R.layout.location_card, locationContainer, false);
+    private void addFavoriteLocationCard(LinearLayout locationContainer, String city) {
+        View cardView = LayoutInflater.from(this).inflate(R.layout.location_card, locationContainer, false);
 
-            TextView tvLocationTitleCard = cardView.findViewById(R.id.tvLocationTitle);
-            TextView tvCityNameCard = cardView.findViewById(R.id.tvCityName);
-            TextView tvTimeCard = cardView.findViewById(R.id.tvTime);
-            TextView tvWeatherStatusCard = cardView.findViewById(R.id.tvWeatherStatus);
-            TextView tvTemperatureCard = cardView.findViewById(R.id.tvTemperature);
-            TextView tvHighTempCard = cardView.findViewById(R.id.tvHighTemp);
-            TextView tvLowTempCard = cardView.findViewById(R.id.tvLowTemp);
+        TextView tvLocationTitleCard = cardView.findViewById(R.id.tvLocationTitle);
+        TextView tvCityNameCard = cardView.findViewById(R.id.tvCityName);
+        TextView tvTimeCard = cardView.findViewById(R.id.tvTime);
+        TextView tvWeatherStatusCard = cardView.findViewById(R.id.tvWeatherStatus);
+        TextView tvTemperatureCard = cardView.findViewById(R.id.tvTemperature);
+        TextView tvHighTempCard = cardView.findViewById(R.id.tvHighTemp);
+        TextView tvLowTempCard = cardView.findViewById(R.id.tvLowTemp);
 
-            tvLocationTitleCard.setText(city);
-            tvCityNameCard.setText(city);
-            fetchWeather(city, tvTimeCard, tvWeatherStatusCard, tvTemperatureCard, tvHighTempCard, tvLowTempCard);
+        tvLocationTitleCard.setText(city);
+        tvCityNameCard.setText(city);
+        fetchWeather(city, tvTimeCard, tvWeatherStatusCard, tvTemperatureCard, tvHighTempCard, tvLowTempCard);
 
-            // Thêm sự kiện click cho thẻ địa điểm yêu thích
-            cardView.setOnClickListener(v -> {
-                Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
-                intent.putExtra("SELECTED_CITY", city);
-                Toast.makeText(this, "Chuyển đến thời tiết tại " + city, Toast.LENGTH_SHORT).show();
-                Log.d("FavoriteLocations", "Using location: " + city);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-                finish();
-            });
+        // Set click listener for favorite location card
+        cardView.setOnClickListener(v -> {
+            Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
+            intent.putExtra("SELECTED_CITY", city);
 
+            Toast.makeText(this, "Chuyển đến thời tiết tại " + city, Toast.LENGTH_SHORT).show();
+            Log.d("FavoriteLocations", "Using location: " + city);
 
-            locationContainer.addView(cardView);
-        }
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            finish();
+        });
+
+        locationContainer.addView(cardView);
     }
 
     private void requestLocationAndFetchWeather(TextView tvCityName, TextView tvTime, TextView tvWeatherStatus,
@@ -244,6 +284,106 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
                 t.printStackTrace();
             }
         });
+    }
+
+    // Settings popup methods - chỉ làm giao diện, không xử lý logic thật
+    private void showSettingsPopup() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.popup_settings, null);
+        dialog.setContentView(view);
+
+        // Make background transparent
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        // Find views
+        LinearLayout languageSetting = view.findViewById(R.id.language_setting);
+        LinearLayout temperatureSetting = view.findViewById(R.id.temperature_setting);
+        TextView currentLanguage = view.findViewById(R.id.current_language);
+        TextView currentTempUnit = view.findViewById(R.id.current_temperature_unit);
+
+        // Display current values - mặc định
+        currentLanguage.setText("Tiếng Việt");
+        currentTempUnit.setText("°C");
+
+        // Handle language click
+        languageSetting.setOnClickListener(v -> {
+            dialog.dismiss();
+            showLanguagePopup();
+        });
+
+        // Handle temperature click
+        temperatureSetting.setOnClickListener(v -> {
+            dialog.dismiss();
+            showTemperaturePopup();
+        });
+
+        dialog.show();
+    }
+
+    private void showLanguagePopup() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.popup_language, null);
+        dialog.setContentView(view);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        LinearLayout englishOption = view.findViewById(R.id.english_option);
+        LinearLayout vietnameseOption = view.findViewById(R.id.vietnamese_option);
+        ImageView englishCheck = view.findViewById(R.id.english_check);
+        ImageView vietnameseCheck = view.findViewById(R.id.vietnamese_check);
+
+        // Show check mark for current selection - mặc định Vietnamese
+        englishCheck.setVisibility(View.GONE);
+        vietnameseCheck.setVisibility(View.VISIBLE);
+
+        englishOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn English", Toast.LENGTH_SHORT).show();
+        });
+
+        vietnameseOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn Tiếng Việt", Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
+    }
+
+    private void showTemperaturePopup() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.popup_temperature, null);
+        dialog.setContentView(view);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        LinearLayout celsiusOption = view.findViewById(R.id.celsius_option);
+        LinearLayout fahrenheitOption = view.findViewById(R.id.fahrenheit_option);
+        ImageView celsiusCheck = view.findViewById(R.id.celsius_check);
+        ImageView fahrenheitCheck = view.findViewById(R.id.fahrenheit_check);
+
+        // Show check mark for current selection - mặc định Celsius
+        celsiusCheck.setVisibility(View.VISIBLE);
+        fahrenheitCheck.setVisibility(View.GONE);
+
+        celsiusOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn °C", Toast.LENGTH_SHORT).show();
+        });
+
+        fahrenheitOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn °F", Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
     }
 
     @Override
