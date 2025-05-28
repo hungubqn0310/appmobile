@@ -6,6 +6,13 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.JsonArray;
@@ -30,16 +37,31 @@ public class ForecastReportActivity extends BaseActivity {
     private static final String API_KEY = "07ccb22a4d5e482f8db72513252805";
     private static final String TAG = "WeatherApp";
     private TextView dateLabel;
+    private Animation loadingAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast_report);
 
-        // Khởi tạo background ngay sau setContentView - DÒNG QUAN TRỌNG NÀY BỊ THIẾU!
+        // Khởi tạo background ngay sau setContentView
         initializeBackground();
 
+        // Khởi tạo animation loading giống MainActivity
+        loadingAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_loading);
+
         String cityName = getIntent().getStringExtra("CITY_NAME");
+
+        // Kiểm tra kết nối mạng và hiển thị loading
+        if (!isNetworkAvailable()) {
+            showAllLoading();
+            Toast.makeText(this, "Không có kết nối mạng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Hiển thị loading khi bắt đầu fetch data
+        showAllLoading();
+
         if (cityName != null) {
             fetchForecast(cityName);
         } else {
@@ -52,6 +74,74 @@ public class ForecastReportActivity extends BaseActivity {
         backButton.setOnClickListener(v -> finish());
     }
 
+    // Kiểm tra kết nối mạng giống MainActivity
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                Network network = connectivityManager.getActiveNetwork();
+                if (network == null) return false;
+                NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(network);
+                return networkCapabilities != null &&
+                        networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            } else {
+                NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+                return networkInfo != null && networkInfo.isConnected();
+            }
+        }
+        return false;
+    }
+
+    // Hiển thị loading cho tất cả ImageView có src="@drawable/ic_cloud_sun"
+    private void showAllLoading() {
+        // Loading cho daily forecast (7 ngày)
+        for (int i = 1; i <= 7; i++) {
+            int containerId = getResources().getIdentifier("day" + i + "_container", "id", getPackageName());
+            LinearLayout container = findViewById(containerId);
+            if (container != null && container.getChildCount() > 1) {
+                ImageView iconImageView = (ImageView) container.getChildAt(1);
+                // Chỉ áp dụng loading cho ImageView có src="@drawable/ic_cloud_sun"
+                iconImageView.setImageResource(R.drawable.ic_loading);
+                iconImageView.startAnimation(loadingAnimation);
+            }
+        }
+
+        // Loading cho hourly forecast (24 giờ)
+        for (int i = 1; i <= 24; i++) {
+            int hourlyItemId = getResources().getIdentifier("hourly_forecast_item" + i, "id", getPackageName());
+            LinearLayout hourlyItem = findViewById(hourlyItemId);
+            if (hourlyItem != null && hourlyItem.getChildCount() > 1) {
+                ImageView iconImageView = (ImageView) hourlyItem.getChildAt(1);
+                // Chỉ áp dụng loading cho ImageView có src="@drawable/ic_cloud_sun"
+                iconImageView.setImageResource(R.drawable.ic_loading);
+                iconImageView.startAnimation(loadingAnimation);
+            }
+        }
+    }
+
+    // Ẩn loading cho tất cả ImageView
+    private void hideAllLoading() {
+        // Ẩn loading cho daily forecast
+        for (int i = 1; i <= 7; i++) {
+            int containerId = getResources().getIdentifier("day" + i + "_container", "id", getPackageName());
+            LinearLayout container = findViewById(containerId);
+            if (container != null && container.getChildCount() > 1) {
+                ImageView iconImageView = (ImageView) container.getChildAt(1);
+                iconImageView.clearAnimation();
+            }
+        }
+
+        // Ẩn loading cho hourly forecast
+        for (int i = 1; i <= 24; i++) {
+            int hourlyItemId = getResources().getIdentifier("hourly_forecast_item" + i, "id", getPackageName());
+            LinearLayout hourlyItem = findViewById(hourlyItemId);
+            if (hourlyItem != null && hourlyItem.getChildCount() > 1) {
+                ImageView iconImageView = (ImageView) hourlyItem.getChildAt(1);
+                iconImageView.clearAnimation();
+            }
+        }
+    }
+
     private void fetchForecast(String cityName) {
         OkHttpClient client = new OkHttpClient();
         String url = "https://api.weatherapi.com/v1/forecast.json?key=" + API_KEY + "&q=" + cityName + "&days=7&aqi=no&alerts=no";
@@ -62,7 +152,10 @@ public class ForecastReportActivity extends BaseActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.e(TAG, "Lỗi khi gọi API dự báo thời tiết: " + e.getMessage());
-                runOnUiThread(() -> Toast.makeText(ForecastReportActivity.this, "Không thể kết nối đến máy chủ thời tiết", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    // Giữ loading khi có lỗi, không ẩn
+                    Toast.makeText(ForecastReportActivity.this, "Không thể kết nối đến máy chủ thời tiết", Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
@@ -107,6 +200,8 @@ public class ForecastReportActivity extends BaseActivity {
                         final String formattedCurrentDate = formatCurrentDate(currentDate);
 
                         runOnUiThread(() -> {
+                            // Ẩn loading trước khi cập nhật UI
+                            hideAllLoading();
                             dateLabel.setText(formattedCurrentDate);
                             updateUI(forecasts);
                             updateHourlyForecast(hourlyForecasts);
@@ -114,11 +209,17 @@ public class ForecastReportActivity extends BaseActivity {
 
                     } catch (Exception e) {
                         Log.e(TAG, "Lỗi khi xử lý dữ liệu JSON dự báo: " + e.getMessage());
-                        runOnUiThread(() -> Toast.makeText(ForecastReportActivity.this, "Lỗi khi xử lý dữ liệu dự báo thời tiết", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> {
+                            // Giữ loading khi có lỗi
+                            Toast.makeText(ForecastReportActivity.this, "Lỗi khi xử lý dữ liệu dự báo thời tiết", Toast.LENGTH_SHORT).show();
+                        });
                     }
                 } else {
                     Log.e(TAG, "Phản hồi không thành công: " + response.code());
-                    runOnUiThread(() -> Toast.makeText(ForecastReportActivity.this, "Không thể lấy dữ liệu dự báo thời tiết", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+                        // Giữ loading khi có lỗi
+                        Toast.makeText(ForecastReportActivity.this, "Không thể lấy dữ liệu dự báo thời tiết", Toast.LENGTH_SHORT).show();
+                    });
                 }
             }
         });
@@ -133,7 +234,10 @@ public class ForecastReportActivity extends BaseActivity {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.e(TAG, "Lỗi khi gọi API: " + e.getMessage());
-                runOnUiThread(() -> Toast.makeText(ForecastReportActivity.this, "Không thể kết nối đến máy chủ thời tiết", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    // Giữ loading khi có lỗi
+                    Toast.makeText(ForecastReportActivity.this, "Không thể kết nối đến máy chủ thời tiết", Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
@@ -178,6 +282,8 @@ public class ForecastReportActivity extends BaseActivity {
                         final String formattedCurrentDate = formatCurrentDate(currentDate);
 
                         runOnUiThread(() -> {
+                            // Ẩn loading trước khi cập nhật UI
+                            hideAllLoading();
                             dateLabel.setText(formattedCurrentDate);
                             updateUI(forecasts);
                             updateHourlyForecast(hourlyForecasts);
@@ -185,16 +291,23 @@ public class ForecastReportActivity extends BaseActivity {
 
                     } catch (Exception e) {
                         Log.e(TAG, "Lỗi khi xử lý dữ liệu JSON: " + e.getMessage());
-                        runOnUiThread(() -> Toast.makeText(ForecastReportActivity.this, "Lỗi khi xử lý dữ liệu thời tiết", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> {
+                            // Giữ loading khi có lỗi
+                            Toast.makeText(ForecastReportActivity.this, "Lỗi khi xử lý dữ liệu thời tiết", Toast.LENGTH_SHORT).show();
+                        });
                     }
                 } else {
                     Log.e(TAG, "Phản hồi không thành công: " + response.code());
-                    runOnUiThread(() -> Toast.makeText(ForecastReportActivity.this, "Không thể lấy dữ liệu thời tiết", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+                        // Giữ loading khi có lỗi
+                        Toast.makeText(ForecastReportActivity.this, "Không thể lấy dữ liệu thời tiết", Toast.LENGTH_SHORT).show();
+                    });
                 }
             }
         });
     }
 
+    // Các method còn lại giữ nguyên
     private String formatCurrentDate(String inputDate) {
         try {
             SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
@@ -222,6 +335,8 @@ public class ForecastReportActivity extends BaseActivity {
 
                 tempTextView.setText(forecast.getTemperature());
                 timeTextView.setText(forecast.getTime());
+
+                // Load ảnh thời tiết thực tế
                 Glide.with(this).load(forecast.getIconUrl()).into(iconImageView);
             }
         }
@@ -240,6 +355,8 @@ public class ForecastReportActivity extends BaseActivity {
                 DailyForecast forecast = forecasts.get(i);
                 dateTextView.setText(forecast.getDate());
                 tempTextView.setText(forecast.getTemperature());
+
+                // Load ảnh thời tiết thực tế
                 Glide.with(this).load(forecast.getConditionIconUrl()).into(iconImageView);
             }
         }
