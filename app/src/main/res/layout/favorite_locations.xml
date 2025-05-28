@@ -58,7 +58,7 @@
         android:layout_marginBottom="24dp"
         android:fontFamily="sans-serif-medium"
         android:letterSpacing="0.05"
-        android:text="Slide To Home →"
+        android:text="Trượt để về trang chủ →"
         android:textColor="#333333"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -83,7 +83,7 @@
         android:id="@+id/tvCity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hanoi"
+        android:text="--"
         android:textSize="30sp"
         android:layout_marginStart="16dp"
         android:textColor="#FFFFFF"
@@ -126,7 +126,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Today, 11 May"
+            android:text="Hôm nay, -- --"
             android:textColor="#FFFFFF"
             android:textSize="20sp" />
 
@@ -135,7 +135,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="29°"
+            android:text="--°"
             android:textColor="#FFFFFF"
             android:textSize="100sp" />
 
@@ -145,7 +145,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textAlignment="center"
-            android:text="Cloudy"
+            android:text="Đang tải..."
             android:textColor="#FFFFFF"
             android:textSize="24sp" />
 
@@ -188,7 +188,7 @@
                 android:layout_row="0"
                 android:layout_column="2"
                 android:layout_gravity="center_vertical"
-                android:text="10 km/h"
+                android:text="-- km/h"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp" />
 
@@ -220,7 +220,7 @@
                 android:layout_row="1"
                 android:layout_column="2"
                 android:layout_gravity="center_vertical"
-                android:text="54 %"
+                android:text="--%"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp" />
         </GridLayout>
@@ -233,7 +233,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="#FFFFFF"
-        android:text="Forecast Report"
+        android:text="Dự báo thời tiết"
         android:textColor="#040303"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/btnMyLocation"
@@ -245,7 +245,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="#FFFFFF"
-        android:text="My Location"
+        android:text="Vị trí của tôi"
         android:textColor="#040303"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/tvSlide"
@@ -256,7 +256,7 @@
         android:id="@+id/tvSlide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="← Slide To Favorite Locations"
+        android:text="← Trượt để sang địa điểm yêu thích"
         android:textColor="#333333"
         android:textSize="16sp"
         android:letterSpacing="0.05"
