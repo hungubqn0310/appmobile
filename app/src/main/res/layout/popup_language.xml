@@ -40,6 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="English"
+            android:paddingRight="16dp"
             android:textSize="16sp"
             android:textColor="#333333" />
 
@@ -74,6 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Tiếng Việt"
+            android:paddingRight="16dp"
             android:textSize="16sp"
             android:textColor="#333333" />
 

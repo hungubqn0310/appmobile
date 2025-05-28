@@ -41,6 +41,7 @@
             android:layout_weight="1"
             android:text="Độ C (Celsius)"
             android:textSize="16sp"
+            android:paddingRight="16dp"
             android:textColor="#333333" />
 
         <ImageView
@@ -74,6 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Độ F (Fahrenheit)"
+            android:paddingRight="16dp"
             android:textSize="16sp"
             android:textColor="#333333" />
 

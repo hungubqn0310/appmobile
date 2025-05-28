@@ -1,5 +1,8 @@
 package com.example.weatherforecastapp;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.util.Log;
@@ -11,6 +14,9 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
@@ -50,6 +56,12 @@ public class ForecastReportActivity extends BaseActivity {
         // Khởi tạo animation loading giống MainActivity
         loadingAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_loading);
 
+        // Setup settings button if exists
+        ImageView settingsButton = findViewById(R.id.settings_button);
+        if (settingsButton != null) {
+            settingsButton.setOnClickListener(v -> showSettingsPopup());
+        }
+
         String cityName = getIntent().getStringExtra("CITY_NAME");
 
         // Kiểm tra kết nối mạng và hiển thị loading
@@ -72,6 +84,106 @@ public class ForecastReportActivity extends BaseActivity {
 
         TextView backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());
+    }
+
+    // Settings popup methods - chỉ làm giao diện, không xử lý logic thật
+    private void showSettingsPopup() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.popup_settings, null);
+        dialog.setContentView(view);
+
+        // Make background transparent
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        // Find views
+        LinearLayout languageSetting = view.findViewById(R.id.language_setting);
+        LinearLayout temperatureSetting = view.findViewById(R.id.temperature_setting);
+        TextView currentLanguage = view.findViewById(R.id.current_language);
+        TextView currentTempUnit = view.findViewById(R.id.current_temperature_unit);
+
+        // Display current values - mặc định
+        currentLanguage.setText("Tiếng Việt");
+        currentTempUnit.setText("°C");
+
+        // Handle language click
+        languageSetting.setOnClickListener(v -> {
+            dialog.dismiss();
+            showLanguagePopup();
+        });
+
+        // Handle temperature click
+        temperatureSetting.setOnClickListener(v -> {
+            dialog.dismiss();
+            showTemperaturePopup();
+        });
+
+        dialog.show();
+    }
+
+    private void showLanguagePopup() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.popup_language, null);
+        dialog.setContentView(view);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        LinearLayout englishOption = view.findViewById(R.id.english_option);
+        LinearLayout vietnameseOption = view.findViewById(R.id.vietnamese_option);
+        ImageView englishCheck = view.findViewById(R.id.english_check);
+        ImageView vietnameseCheck = view.findViewById(R.id.vietnamese_check);
+
+        // Show check mark for current selection - mặc định Vietnamese
+        englishCheck.setVisibility(View.GONE);
+        vietnameseCheck.setVisibility(View.VISIBLE);
+
+        englishOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn English", Toast.LENGTH_SHORT).show();
+        });
+
+        vietnameseOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn Tiếng Việt", Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
+    }
+
+    private void showTemperaturePopup() {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.popup_temperature, null);
+        dialog.setContentView(view);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        LinearLayout celsiusOption = view.findViewById(R.id.celsius_option);
+        LinearLayout fahrenheitOption = view.findViewById(R.id.fahrenheit_option);
+        ImageView celsiusCheck = view.findViewById(R.id.celsius_check);
+        ImageView fahrenheitCheck = view.findViewById(R.id.fahrenheit_check);
+
+        // Show check mark for current selection - mặc định Celsius
+        celsiusCheck.setVisibility(View.VISIBLE);
+        fahrenheitCheck.setVisibility(View.GONE);
+
+        celsiusOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn °C", Toast.LENGTH_SHORT).show();
+        });
+
+        fahrenheitOption.setOnClickListener(v -> {
+            // Chỉ đóng popup, không xử lý logic
+            dialog.dismiss();
+            Toast.makeText(this, "Đã chọn °F", Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
     }
 
     // Kiểm tra kết nối mạng giống MainActivity
