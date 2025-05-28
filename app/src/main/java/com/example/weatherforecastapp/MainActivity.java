@@ -13,11 +13,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.graphics.drawable.AnimationDrawable;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -39,7 +36,8 @@ import java.util.HashSet;
 import java.util.Set;
 import android.text.Html;
 import android.text.Spanned;
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatActivity thành BaseActivity
     private GestureDetector gestureDetector;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private FusedLocationProviderClient fusedLocationClient;
@@ -52,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
     View notificationBadge;
     Button btnForecast;
     FrameLayout notificationContainer;
-    ConstraintLayout rootLayout;
     FrameLayout rainContainer;
     RainView rainView;
 
@@ -60,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Khởi tạo background ngay sau setContentView
+        initializeBackground();
+
         TextView tvSlide = findViewById(R.id.tvSlide);
         Animation pulse = AnimationUtils.loadAnimation(this, R.anim.slide_right_to_left);
         tvSlide.startAnimation(pulse);
@@ -92,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
         btnForecast = findViewById(R.id.btnForecast);
         notificationContainer = findViewById(R.id.notificationContainer);
         notificationBadge = findViewById(R.id.notificationBadge);
-        rootLayout = findViewById(R.id.rootLayout);
         rainContainer = findViewById(R.id.rainContainer);
 
         // Khởi tạo hiệu ứng mưa
@@ -286,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
                     Set<String> favoriteCities = sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>());
                     ivLove.setSelected(favoriteCities.contains(weather.location.name));
 
+                    // Sử dụng method từ BaseActivity
                     updateBackground(weather.location.localtime);
                     updateRainEffect(weather.current.condition.text);
                 } else {
@@ -331,6 +332,7 @@ public class MainActivity extends AppCompatActivity {
                     Set<String> favoriteCities = sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>());
                     ivLove.setSelected(favoriteCities.contains(weather.location.name));
 
+                    // Sử dụng method từ BaseActivity
                     updateBackground(weather.location.localtime);
                     updateRainEffect(weather.current.condition.text);
                 } else {
@@ -368,28 +370,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateBackground(String localtime) {
-        String[] parts = localtime.split(" ");
-        if (parts.length == 2) {
-            String timePart = parts[1];
-            String[] timeSplit = timePart.split(":");
-            int hour = Integer.parseInt(timeSplit[0]);
-
-            if (hour >= 6 && hour < 18) {
-                rootLayout.setBackgroundResource(R.drawable.animated_background_day);
-                AnimationDrawable animationDrawable = (AnimationDrawable) rootLayout.getBackground();
-                animationDrawable.setEnterFadeDuration(6000);
-                animationDrawable.setExitFadeDuration(6000);
-                animationDrawable.start();
-            } else {
-                rootLayout.setBackgroundResource(R.drawable.animated_background_night);
-                AnimationDrawable animationDrawable = (AnimationDrawable) rootLayout.getBackground();
-                animationDrawable.setEnterFadeDuration(6000);
-                animationDrawable.setExitFadeDuration(6000);
-                animationDrawable.start();
-            }
-        }
-    }
+    // Xóa method updateBackground - đã có trong BaseActivity
 
     private void showNotificationPopup() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);

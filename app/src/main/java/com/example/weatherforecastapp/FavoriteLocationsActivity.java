@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -24,7 +23,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.weatherforecastapp.api.WeatherApiService;
@@ -41,7 +39,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.HashSet;
 import java.util.Set;
 
-public class FavoriteLocationsActivity extends AppCompatActivity {
+public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi từ AppCompatActivity thành BaseActivity
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private GestureDetector gestureDetector;
     private FusedLocationProviderClient fusedLocationClient;
@@ -54,6 +52,9 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.favorite_locations);
+
+        // Khởi tạo background ngay sau setContentView
+        initializeBackground();
 
         // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -331,7 +332,7 @@ public class FavoriteLocationsActivity extends AppCompatActivity {
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         LinearLayout englishOption = view.findViewById(R.id.english_option);
-        LinearLayout vietnameseOption = view.findViewById(R.id.vietnamese_option);
+        LinearLayout vietnameseOption = view        .findViewById(R.id.vietnamese_option);
         ImageView englishCheck = view.findViewById(R.id.english_check);
         ImageView vietnameseCheck = view.findViewById(R.id.vietnamese_check);
 

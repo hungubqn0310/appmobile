@@ -2,9 +2,13 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/animated_background_day">
+    android:background="@drawable/bg_gradient"
+    tools:context=".FavoriteLocationsActivity"
+    android:fitsSystemWindows="true">
 
     <TextView
         android:id="@+id/tvTitle"
