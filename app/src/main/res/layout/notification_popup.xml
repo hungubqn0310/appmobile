@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -23,30 +24,31 @@
 
         <ImageView
             android:id="@+id/ivClosePopup"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@drawable/ic_close"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_alignParentEnd="true"
-            android:tint="#333333"/>
+            android:src="@drawable/ic_close"
+            app:tint="#333333" />
     </RelativeLayout>
 
     <!-- Nội dung thông báo thời tiết -->
     <ScrollView
         android:layout_width="match_parent"
+        android:padding="8dp"
         android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="8dp">
 
             <!-- Gợi ý trang phục -->
             <TextView
                 android:id="@+id/tvClothingSuggestion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#D6F1FF"
+                android:background="@drawable/rounded_blue_background"
                 android:padding="16dp"
                 android:layout_marginBottom="16dp"
                 android:textColor="#333333"
@@ -57,7 +59,7 @@
                 android:id="@+id/tvHealthAdvice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#D6FFD6"
+                android:background="@drawable/green_background"
                 android:padding="16dp"
                 android:layout_marginBottom="16dp"
                 android:textColor="#333333"
@@ -68,9 +70,8 @@
                 android:id="@+id/tvWeatherImpact"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#FFEDD6"
+                android:background="@drawable/rounded_orange_background"
                 android:padding="16dp"
-                android:layout_marginBottom="16dp"
                 android:textColor="#333333"
                 android:textSize="14sp"/>
 
