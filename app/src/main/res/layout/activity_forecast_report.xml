@@ -1053,13 +1053,14 @@
                         android:alpha="0.8" />
 
                     <TextView
+                        android:id="@+id/tvBinhMinh"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="--:--"
                         android:textColor="#FFFFFF"
                         android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="4dp" />
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -1080,13 +1081,14 @@
                         android:alpha="0.8" />
 
                     <TextView
+                        android:id="@+id/tvHoangHon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="--:--"
                         android:textColor="#FFFFFF"
                         android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="4dp" />
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -1126,13 +1128,14 @@
                         android:alpha="0.8" />
 
                     <TextView
+                        android:id="@+id/tvTrangMoc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="--:--"
                         android:textColor="#FFFFFF"
                         android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="4dp" />
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -1160,13 +1163,14 @@
                         android:alpha="0.8" />
 
                     <TextView
+                        android:id="@+id/tvTrangLan"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="--:--"
                         android:textColor="#FFFFFF"
                         android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="4dp" />
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -1176,17 +1180,14 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Đang tải..."
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
+                android:layout_marginTop="12dp"
                 android:alpha="0.8"
                 android:gravity="center"
-                android:layout_marginTop="12dp" />
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
 
         </LinearLayout>
     </LinearLayout>
     </ScrollView>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

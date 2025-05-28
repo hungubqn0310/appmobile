@@ -31,6 +31,10 @@ public class ForecastReportActivity extends BaseActivity {
     private static final String TAG = "WeatherApp";
     private TextView dateLabel;
 
+    // Thêm các view mới
+    private SunArcView sunArcView;
+    private TextView tvBinhMinh, tvHoangHon, tvTrangMoc, tvTrangLan, tvMoonPhase;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +43,9 @@ public class ForecastReportActivity extends BaseActivity {
         // Khởi tạo background ngay sau setContentView - DÒNG QUAN TRỌNG NÀY BỊ THIẾU!
         initializeBackground();
 
+        // Khởi tạo các view
+        initViews();
+
         String cityName = getIntent().getStringExtra("CITY_NAME");
         if (cityName != null) {
             fetchForecast(cityName);
@@ -46,10 +53,20 @@ public class ForecastReportActivity extends BaseActivity {
             fetchWeatherData();
         }
 
-        dateLabel = findViewById(R.id.date_label);
-
         TextView backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());
+    }
+
+    private void initViews() {
+        dateLabel = findViewById(R.id.date_label);
+        sunArcView = findViewById(R.id.sunArcView);
+        tvBinhMinh = findViewById(R.id.tvBinhMinh);
+        tvHoangHon = findViewById(R.id.tvHoangHon);
+        tvTrangMoc = findViewById(R.id.tvTrangMoc);
+        tvTrangLan = findViewById(R.id.tvTrangLan);
+
+        // Tìm TextView cho moon phase (cần thêm ID vào layout)
+
     }
 
     private void fetchForecast(String cityName) {
@@ -78,6 +95,22 @@ public class ForecastReportActivity extends BaseActivity {
                         List<DailyForecast> forecasts = new ArrayList<>();
                         List<HourlyForecast> hourlyForecasts = new ArrayList<>();
 
+                        // Lấy dữ liệu Astro từ ngày đầu tiên
+                        AstroData astroData = null;
+                        if (forecastDays.size() > 0) {
+                            JsonObject firstDay = forecastDays.get(0).getAsJsonObject();
+                            if (firstDay.has("astro")) {
+                                JsonObject astro = firstDay.getAsJsonObject("astro");
+                                astroData = new AstroData(
+                                        astro.get("sunrise").getAsString(),
+                                        astro.get("sunset").getAsString(),
+                                        astro.get("moonrise").getAsString(),
+                                        astro.get("moonset").getAsString(),
+                                        astro.get("moon_phase").getAsString()
+                                );
+                            }
+                        }
+
                         for (int i = 0; i < forecastDays.size(); i++) {
                             JsonObject dayForecast = forecastDays.get(i).getAsJsonObject();
                             String date = dayForecast.get("date").getAsString();
@@ -105,11 +138,17 @@ public class ForecastReportActivity extends BaseActivity {
                         }
 
                         final String formattedCurrentDate = formatCurrentDate(currentDate);
+                        final AstroData finalAstroData = astroData;
 
                         runOnUiThread(() -> {
                             dateLabel.setText(formattedCurrentDate);
                             updateUI(forecasts);
                             updateHourlyForecast(hourlyForecasts);
+
+                            // Cập nhật dữ liệu thiên văn
+                            if (finalAstroData != null) {
+                                updateAstroData(finalAstroData);
+                            }
                         });
 
                     } catch (Exception e) {
@@ -149,6 +188,22 @@ public class ForecastReportActivity extends BaseActivity {
                         List<DailyForecast> forecasts = new ArrayList<>();
                         List<HourlyForecast> hourlyForecasts = new ArrayList<>();
 
+                        // Lấy dữ liệu Astro từ ngày đầu tiên
+                        AstroData astroData = null;
+                        if (forecastDays.size() > 0) {
+                            JsonObject firstDay = forecastDays.get(0).getAsJsonObject();
+                            if (firstDay.has("astro")) {
+                                JsonObject astro = firstDay.getAsJsonObject("astro");
+                                astroData = new AstroData(
+                                        astro.get("sunrise").getAsString(),
+                                        astro.get("sunset").getAsString(),
+                                        astro.get("moonrise").getAsString(),
+                                        astro.get("moonset").getAsString(),
+                                        astro.get("moon_phase").getAsString()
+                                );
+                            }
+                        }
+
                         for (int i = 0; i < forecastDays.size(); i++) {
                             JsonObject dayForecast = forecastDays.get(i).getAsJsonObject();
                             String date = dayForecast.get("date").getAsString();
@@ -176,11 +231,17 @@ public class ForecastReportActivity extends BaseActivity {
                         }
 
                         final String formattedCurrentDate = formatCurrentDate(currentDate);
+                        final AstroData finalAstroData = astroData;
 
                         runOnUiThread(() -> {
                             dateLabel.setText(formattedCurrentDate);
                             updateUI(forecasts);
                             updateHourlyForecast(hourlyForecasts);
+
+                            // Cập nhật dữ liệu thiên văn
+                            if (finalAstroData != null) {
+                                updateAstroData(finalAstroData);
+                            }
                         });
 
                     } catch (Exception e) {
@@ -193,6 +254,76 @@ public class ForecastReportActivity extends BaseActivity {
                 }
             }
         });
+    }
+
+    // Phương thức mới để cập nhật dữ liệu thiên văn
+    private void updateAstroData(AstroData astroData) {
+        try {
+            // Cập nhật thời gian bình minh và hoàng hôn
+            String sunrise24h = convertTo24Hour(astroData.sunrise);
+            String sunset24h = convertTo24Hour(astroData.sunset);
+
+            tvBinhMinh.setText(sunrise24h);
+            tvHoangHon.setText(sunset24h);
+
+            // Cập nhật SunArcView với thời gian thực
+            if (sunArcView != null) {
+                sunArcView.setSunTimes(sunrise24h, sunset24h);
+            }
+
+            // Cập nhật thời gian mặt trăng
+            String moonrise24h = convertTo24Hour(astroData.moonrise);
+            String moonset24h = convertTo24Hour(astroData.moonset);
+
+            tvTrangMoc.setText(moonrise24h);
+            tvTrangLan.setText(moonset24h);
+
+            // Cập nhật pha mặt trăng
+            if (tvMoonPhase != null) {
+                String moonPhaseVietnamese = translateMoonPhase(astroData.moonPhase);
+                tvMoonPhase.setText(moonPhaseVietnamese);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Lỗi khi cập nhật dữ liệu thiên văn: " + e.getMessage());
+        }
+    }
+
+    // Chuyển đổi từ 12h sang 24h format
+    private String convertTo24Hour(String time12h) {
+        try {
+            SimpleDateFormat input = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
+            SimpleDateFormat output = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+            Date date = input.parse(time12h);
+            return output.format(date);
+        } catch (ParseException e) {
+            Log.e(TAG, "Lỗi chuyển đổi thời gian: " + e.getMessage());
+            return time12h; // Trả về giá trị gốc nếu lỗi
+        }
+    }
+
+    // Dịch tên pha mặt trăng sang tiếng Việt
+    private String translateMoonPhase(String englishPhase) {
+        switch (englishPhase.toLowerCase()) {
+            case "new moon":
+                return "Trăng mới";
+            case "waxing crescent":
+                return "Trăng lưỡi liềm tăng";
+            case "first quarter":
+                return "Trăng tròn một phần tư";
+            case "waxing gibbous":
+                return "Trăng khuyết tăng";
+            case "full moon":
+                return "Trăng tròn";
+            case "waning gibbous":
+                return "Trăng khuyết giảm";
+            case "last quarter":
+                return "Trăng tròn ba phần tư";
+            case "waning crescent":
+                return "Trăng lưỡi liềm giảm";
+            default:
+                return englishPhase;
+        }
     }
 
     private String formatCurrentDate(String inputDate) {
@@ -254,6 +385,23 @@ public class ForecastReportActivity extends BaseActivity {
         } catch (ParseException e) {
             Log.e(TAG, "Lỗi khi định dạng ngày tháng: " + e.getMessage());
             return inputDate;
+        }
+    }
+
+    // Class để lưu dữ liệu thiên văn
+    private static class AstroData {
+        public final String sunrise;
+        public final String sunset;
+        public final String moonrise;
+        public final String moonset;
+        public final String moonPhase;
+
+        public AstroData(String sunrise, String sunset, String moonrise, String moonset, String moonPhase) {
+            this.sunrise = sunrise;
+            this.sunset = sunset;
+            this.moonrise = moonrise;
+            this.moonset = moonset;
+            this.moonPhase = moonPhase;
         }
     }
 
