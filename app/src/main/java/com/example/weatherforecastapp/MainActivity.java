@@ -274,6 +274,7 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                 Log.d("MainActivity", "Location received: Lat=" + location.getLatitude() + ", Lon=" + location.getLongitude());
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
+                Toast.makeText(this, "Đã lấy vị trí GPS thành công", Toast.LENGTH_SHORT).show();
                 fetchWeatherByCoordinates(latitude, longitude);
             } else {
                 Log.d("MainActivity", "Location is null");
