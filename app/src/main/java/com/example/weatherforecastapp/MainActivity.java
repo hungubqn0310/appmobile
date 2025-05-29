@@ -166,8 +166,17 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         tvCity.setOnClickListener(v -> openLocationPicker());
 
         // Click thông báo
+        // Click thông báo - thêm kiểm tra
         notificationContainer.setOnClickListener(v -> {
-            showNotificationPopup();
+            // Kiểm tra xem có dữ liệu thời tiết không
+            String tempText = tvTemperature.getText().toString();
+            String weatherCondition = tvWeatherStatus.getText().toString();
+
+            if (tempText.equals("--°") || weatherCondition.equals("Đang tải...") || weatherCondition.isEmpty()) {
+                Toast.makeText(this, "Đang tải dữ liệu thời tiết, vui lòng thử lại sau", Toast.LENGTH_SHORT).show();
+            } else {
+                showNotificationPopup();
+            }
             notificationBadge.setVisibility(View.GONE);
         });
 
@@ -444,32 +453,96 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         TextView tvHealthAdvice = sheetView.findViewById(R.id.tvHealthAdvice);
         TextView tvWeatherImpact = sheetView.findViewById(R.id.tvWeatherImpact);
 
-        // Lấy dữ liệu thời tiết hiện tại để đưa ra gợi ý
-        String tempText = tvTemperature.getText().toString();
-        double temperature = Double.parseDouble(tempText.replace("°", ""));
-        String weatherCondition = tvWeatherStatus.getText().toString();
-        String humidityText = tvHumidity.getText().toString();
-        int humidity = Integer.parseInt(humidityText.replace("%", ""));
-        String windText = tvWind.getText().toString();
-        double windSpeed = Double.parseDouble(windText.split(" ")[0]);
+        try {
+            // Kiểm tra và lấy dữ liệu thời tiết hiện tại
+            String tempText = tvTemperature.getText().toString();
+            String weatherCondition = tvWeatherStatus.getText().toString();
+            String humidityText = tvHumidity.getText().toString();
+            String windText = tvWind.getText().toString();
 
-        // Tạo gợi ý trang phục dựa trên nhiệt độ và điều kiện thời tiết
-        String clothingSuggestion = getClothingSuggestion(temperature, weatherCondition, humidity);
-        // Chuyển đổi HTML thành định dạng hiển thị
-        tvClothingSuggestion.setText(fromHtml(clothingSuggestion));
+            // Kiểm tra xem có dữ liệu hợp lệ không
+            if (tempText.equals("--°") || tempText.isEmpty() ||
+                    weatherCondition.equals("Đang tải...") || weatherCondition.isEmpty() ||
+                    humidityText.equals("--%") || humidityText.isEmpty() ||
+                    windText.equals("-- km/h") || windText.isEmpty()) {
 
-        // Tạo lời khuyên sức khỏe dựa trên nhiệt độ và độ ẩm
-        String healthAdvice = getHealthAdvice(temperature, humidity, weatherCondition);
-        tvHealthAdvice.setText(fromHtml(healthAdvice));
+                // Hiển thị thông báo không có dữ liệu
+                showNoDataNotification(tvClothingSuggestion, tvHealthAdvice, tvWeatherImpact);
+            } else {
+                // Parse dữ liệu với try-catch
+                double temperature = parseTemperature(tempText);
+                int humidity = parseHumidity(humidityText);
+                double windSpeed = parseWindSpeed(windText);
 
-        // Tạo dự báo tác động dựa trên điều kiện thời tiết và gió
-        String weatherImpact = getWeatherImpact(temperature, weatherCondition, windSpeed, humidity);
-        tvWeatherImpact.setText(fromHtml(weatherImpact));
+                // Tạo gợi ý dựa trên dữ liệu
+                String clothingSuggestion = getClothingSuggestion(temperature, weatherCondition, humidity);
+                tvClothingSuggestion.setText(fromHtml(clothingSuggestion));
+
+                String healthAdvice = getHealthAdvice(temperature, humidity, weatherCondition);
+                tvHealthAdvice.setText(fromHtml(healthAdvice));
+
+                String weatherImpact = getWeatherImpact(temperature, weatherCondition, windSpeed, humidity);
+                tvWeatherImpact.setText(fromHtml(weatherImpact));
+            }
+        } catch (Exception e) {
+            Log.e("MainActivity", "Error parsing weather data: " + e.getMessage());
+            // Hiển thị thông báo lỗi
+            showErrorNotification(tvClothingSuggestion, tvHealthAdvice, tvWeatherImpact);
+        }
 
         ivClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
-
         bottomSheetDialog.show();
         notificationBadge.setVisibility(View.GONE);
+    }
+    // Phương thức parse nhiệt độ an toàn
+    private double parseTemperature(String tempText) {
+        try {
+            return Double.parseDouble(tempText.replace("°", ""));
+        } catch (NumberFormatException e) {
+            return 25.0; // Giá trị mặc định
+        }
+    }
+
+    // Phương thức parse độ ẩm an toàn
+    private int parseHumidity(String humidityText) {
+        try {
+            return Integer.parseInt(humidityText.replace("%", ""));
+        } catch (NumberFormatException e) {
+            return 50; // Giá trị mặc định
+        }
+    }
+
+    // Phương thức parse tốc độ gió an toàn
+    private double parseWindSpeed(String windText) {
+        try {
+            return Double.parseDouble(windText.split(" ")[0]);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            return 10.0; // Giá trị mặc định
+        }
+    }
+
+    // Hiển thị thông báo khi không có dữ liệu
+    private void showNoDataNotification(TextView tvClothingSuggestion, TextView tvHealthAdvice, TextView tvWeatherImpact) {
+        String noDataMessage = "📡 <b>Không có dữ liệu thời tiết</b><br><br>" +
+                "Vui lòng kiểm tra kết nối mạng và thử lại để nhận được:<br>" +
+                "• Gợi ý trang phục phù hợp<br>" +
+                "• Lời khuyên sức khỏe<br>" +
+                "• Dự báo tác động thời tiết";
+
+        tvClothingSuggestion.setText(fromHtml(noDataMessage));
+        tvHealthAdvice.setText(fromHtml(""));
+        tvWeatherImpact.setText(fromHtml(""));
+    }
+
+    // Hiển thị thông báo lỗi
+    private void showErrorNotification(TextView tvClothingSuggestion, TextView tvHealthAdvice, TextView tvWeatherImpact) {
+        String errorMessage = "⚠️ <b>Lỗi xử lý dữ liệu</b><br><br>" +
+                "Đã xảy ra lỗi khi xử lý thông tin thời tiết.<br>" +
+                "Vui lòng thử lại sau.";
+
+        tvClothingSuggestion.setText(fromHtml(errorMessage));
+        tvHealthAdvice.setText(fromHtml(""));
+        tvWeatherImpact.setText(fromHtml(""));
     }
 
     // Phương thức hỗ trợ để xử lý HTML trên cả phiên bản Android cũ và mới
