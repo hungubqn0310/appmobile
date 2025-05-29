@@ -42,6 +42,8 @@ import java.util.Set;
 public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi từ AppCompatActivity thành BaseActivity
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private GestureDetector gestureDetector;
+    private boolean isSwipeInProgress = false;
+
     private FusedLocationProviderClient fusedLocationClient;
     private SharedPreferences sharedPreferences;
     // SharedPreferences constants for favorite locations
@@ -81,12 +83,23 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
     }
 
     private void setupGestureDetector() {
+        // 1. Setup gesture detector cho ScrollView (swipe trong ScrollView)
+        HorizontalSwipeScrollView scrollView = findViewById(R.id.scrollView);
+        scrollView.setOnHorizontalSwipeListener(() -> {
+            finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            return true;
+        });
+
+        // 2. Setup gesture detector cho toàn bộ Activity (swipe ngoài ScrollView)
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             private static final int SWIPE_THRESHOLD = 100;
             private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null) return false;
+
                 float diffX = e2.getX() - e1.getX();
                 float diffY = e2.getY() - e1.getY();
 
@@ -101,6 +114,11 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
                 }
                 return false;
             }
+        });
+
+        // 3. Set touch listener cho root layout (để handle swipe ngoài ScrollView)
+        findViewById(R.id.rootLayout).setOnTouchListener((v, event) -> {
+            return gestureDetector.onTouchEvent(event);
         });
     }
 
@@ -130,13 +148,12 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
         TextView tvHighTemp = myLocationCard.findViewById(R.id.tvHighTemp);
         TextView tvLowTemp = myLocationCard.findViewById(R.id.tvLowTemp);
 
-        // Set text based on language preference
         tvLocationTitle.setText("Vị trí của tôi");
         tvCityName.setText("Đang tải...");
 
         requestLocationAndFetchWeather(tvCityName, tvTime, tvWeatherStatus, tvTemperature, tvHighTemp, tvLowTemp);
 
-        // Set click listener for my location card
+        // Chỉ dùng OnClickListener đơn giản
         myLocationCard.setOnClickListener(v -> {
             Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
             String cityName = tvCityName.getText().toString();
@@ -170,7 +187,7 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
         tvCityNameCard.setText(city);
         fetchWeather(city, tvTimeCard, tvWeatherStatusCard, tvTemperatureCard, tvHighTempCard, tvLowTempCard);
 
-        // Set click listener for favorite location card
+        // Chỉ dùng OnClickListener đơn giản
         cardView.setOnClickListener(v -> {
             Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
             intent.putExtra("SELECTED_CITY", city);
