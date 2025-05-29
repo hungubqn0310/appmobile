@@ -274,7 +274,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                 Log.d("MainActivity", "Location received: Lat=" + location.getLatitude() + ", Lon=" + location.getLongitude());
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
-                Toast.makeText(this, "Đã lấy vị trí GPS thành công", Toast.LENGTH_SHORT).show();
                 fetchWeatherByCoordinates(latitude, longitude);
             } else {
                 Log.d("MainActivity", "Location is null");
@@ -313,9 +312,10 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                hideLoading(); // Ẩn loading khi có response
 
                 if (response.isSuccessful() && response.body() != null) {
+                    hideLoading(); // Ẩn loading khi có response
+
                     WeatherResponse weather = response.body();
                     tvCity.setText(weather.location.name);
                     tvDate.setText("Hôm nay, " + weather.location.localtime);
@@ -343,7 +343,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                hideLoading(); // Ẩn loading khi có lỗi
 
                 Toast.makeText(MainActivity.this, "Lấy dữ liệu thời tiết thất bại: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 t.printStackTrace();
@@ -372,9 +371,10 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                hideLoading(); // Ẩn loading khi có response
 
                 if (response.isSuccessful() && response.body() != null) {
+                    hideLoading(); // Ẩn loading khi có response
+
                     WeatherResponse weather = response.body();
                     tvCity.setText(weather.location.name);
                     tvDate.setText("Hôm nay, " + weather.location.localtime);
@@ -402,7 +402,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                hideLoading(); // Ẩn loading khi có lỗi
 
                 Toast.makeText(MainActivity.this, "Lấy dữ liệu thời tiết thất bại: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 t.printStackTrace();
