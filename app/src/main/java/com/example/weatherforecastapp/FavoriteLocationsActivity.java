@@ -14,6 +14,7 @@ import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -39,9 +40,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.HashSet;
 import java.util.Set;
 
-public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi từ AppCompatActivity thành BaseActivity
+public class FavoriteLocationsActivity extends BaseActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private GestureDetector gestureDetector;
+    private boolean isSwipeInProgress = false;
+
     private FusedLocationProviderClient fusedLocationClient;
     private SharedPreferences sharedPreferences;
     // SharedPreferences constants for favorite locations
@@ -61,8 +64,10 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
 
         // Initialize animation
         TextView tvSlide = findViewById(R.id.tvSlide);
-        Animation pulse = AnimationUtils.loadAnimation(this, R.anim.slide_left_to_right);
-        tvSlide.startAnimation(pulse);
+        if (tvSlide != null) {
+            Animation pulse = AnimationUtils.loadAnimation(this, R.anim.slide_left_to_right);
+            tvSlide.startAnimation(pulse);
+        }
 
         // Initialize location client
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -81,12 +86,25 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
     }
 
     private void setupGestureDetector() {
+        // 1. Setup gesture detector cho ScrollView (swipe trong ScrollView)
+        HorizontalSwipeScrollView scrollView = findViewById(R.id.scrollView);
+        if (scrollView != null) {
+            scrollView.setOnHorizontalSwipeListener(() -> {
+                finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+                return true;
+            });
+        }
+
+        // 2. Setup gesture detector cho toàn bộ Activity (swipe ngoài ScrollView)
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             private static final int SWIPE_THRESHOLD = 100;
             private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null) return false;
+
                 float diffX = e2.getX() - e1.getX();
                 float diffY = e2.getY() - e1.getY();
 
@@ -102,10 +120,22 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
                 return false;
             }
         });
+
+        // 3. Set touch listener cho root layout (để handle swipe ngoài ScrollView)
+        View rootLayout = findViewById(R.id.rootLayout);
+        if (rootLayout != null) {
+            rootLayout.setOnTouchListener((v, event) -> {
+                return gestureDetector.onTouchEvent(event);
+            });
+        }
     }
 
     private void setupLocationCards() {
         LinearLayout locationContainer = findViewById(R.id.locationContainer);
+        if (locationContainer == null) {
+            Log.e("FavoriteLocations", "locationContainer not found");
+            return;
+        }
 
         // Get favorite cities from SharedPreferences
         Set<String> favoriteCitiesSet = sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>());
@@ -130,13 +160,12 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
         TextView tvHighTemp = myLocationCard.findViewById(R.id.tvHighTemp);
         TextView tvLowTemp = myLocationCard.findViewById(R.id.tvLowTemp);
 
-        // Set text based on language preference
         tvLocationTitle.setText("Vị trí của tôi");
         tvCityName.setText("Đang tải...");
 
         requestLocationAndFetchWeather(tvCityName, tvTime, tvWeatherStatus, tvTemperature, tvHighTemp, tvLowTemp);
 
-        // Set click listener for my location card
+        // Chỉ dùng OnClickListener đơn giản
         myLocationCard.setOnClickListener(v -> {
             Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
             String cityName = tvCityName.getText().toString();
@@ -170,7 +199,7 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
         tvCityNameCard.setText(city);
         fetchWeather(city, tvTimeCard, tvWeatherStatusCard, tvTemperatureCard, tvHighTempCard, tvLowTempCard);
 
-        // Set click listener for favorite location card
+        // Chỉ dùng OnClickListener đơn giản
         cardView.setOnClickListener(v -> {
             Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
             intent.putExtra("SELECTED_CITY", city);
@@ -207,7 +236,7 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
                     }
                 })
                 .addOnFailureListener(e -> {
-                    e.printStackTrace();
+                    Log.e("FavoriteLocations", "Error getting location", e);
                     tvCityName.setText("Lỗi lấy vị trí");
                 });
     }
@@ -240,19 +269,48 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     WeatherResponse weather = response.body();
-                    tvCityName.setText(weather.location.name);
-                    String time = weather.location.localtime.split(" ")[1];
-                    tvTime.setText(time);
-                    tvWeatherStatus.setText(weather.current.condition.text);
-                    tvTemperature.setText(weather.current.temp_c + "°");
-                    tvHighTemp.setText("C:" + weather.forecast.forecastday.get(0).day.maxtemp_c + "°");
-                    tvLowTemp.setText("T:" + weather.forecast.forecastday.get(0).day.mintemp_c + "°");
+                    try {
+                        // Safely update UI with null checks
+                        if (weather.location != null && weather.location.name != null) {
+                            tvCityName.setText(weather.location.name);
+                        }
+
+                        if (weather.location != null && weather.location.localtime != null) {
+                            String[] timeParts = weather.location.localtime.split(" ");
+                            if (timeParts.length > 1) {
+                                tvTime.setText(timeParts[1]);
+                            }
+                        }
+
+                        if (weather.current != null) {
+                            if (weather.current.condition != null && weather.current.condition.text != null) {
+                                tvWeatherStatus.setText(weather.current.condition.text);
+                            }
+                            tvTemperature.setText(weather.current.temp_c + "°");
+                        }
+
+                        if (weather.forecast != null && weather.forecast.forecastday != null &&
+                                !weather.forecast.forecastday.isEmpty() && weather.forecast.forecastday.get(0).day != null) {
+                            tvHighTemp.setText("C:" + weather.forecast.forecastday.get(0).day.maxtemp_c + "°");
+                            tvLowTemp.setText("T:" + weather.forecast.forecastday.get(0).day.mintemp_c + "°");
+                        }
+
+
+
+                    } catch (Exception e) {
+                        Log.e("FavoriteLocations", "Error parsing weather data", e);
+                        tvCityName.setText("Lỗi dữ liệu thời tiết");
+                    }
+                } else {
+                    Log.e("FavoriteLocations", "Weather API response not successful: " + response.code());
+                    tvCityName.setText("Lỗi API thời tiết");
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                t.printStackTrace();
+                Log.e("FavoriteLocations", "Weather API call failed", t);
+                tvCityName.setText("Lỗi kết nối API");
             }
         });
     }
@@ -271,18 +329,40 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     WeatherResponse weather = response.body();
-                    String time = weather.location.localtime.split(" ")[1];
-                    tvTime.setText(time);
-                    tvWeatherStatus.setText(weather.current.condition.text);
-                    tvTemperature.setText(weather.current.temp_c + "°");
-                    tvHighTemp.setText("C:" + weather.forecast.forecastday.get(0).day.maxtemp_c + "°");
-                    tvLowTemp.setText("T:" + weather.forecast.forecastday.get(0).day.mintemp_c + "°");
+                    try {
+                        // Safely update UI with null checks
+                        if (weather.location != null && weather.location.localtime != null) {
+                            String[] timeParts = weather.location.localtime.split(" ");
+                            if (timeParts.length > 1) {
+                                tvTime.setText(timeParts[1]);
+                            }
+                        }
+                        if (weather.current != null) {
+                            if (weather.current.condition != null && weather.current.condition.text != null) {
+                                tvWeatherStatus.setText(weather.current.condition.text);
+                            }
+                            tvTemperature.setText(weather.current.temp_c + "°");
+                        }
+
+                        if (weather.forecast != null && weather.forecast.forecastday != null &&
+                                !weather.forecast.forecastday.isEmpty() && weather.forecast.forecastday.get(0).day != null) {
+                            tvHighTemp.setText("C:" + weather.forecast.forecastday.get(0).day.maxtemp_c + "°");
+                            tvLowTemp.setText("T:" + weather.forecast.forecastday.get(0).day.mintemp_c + "°");
+                        }
+
+
+
+                    } catch (Exception e) {
+                        Log.e("FavoriteLocations", "Error parsing weather data for " + city, e);
+                    }
+                } else {
+                    Log.e("FavoriteLocations", "Weather API response not successful for " + city + ": " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                t.printStackTrace();
+                Log.e("FavoriteLocations", "Weather API call failed for " + city, t);
             }
         });
     }
@@ -305,20 +385,24 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
         TextView currentTempUnit = view.findViewById(R.id.current_temperature_unit);
 
         // Display current values - mặc định
-        currentLanguage.setText("Tiếng Việt");
-        currentTempUnit.setText("°C");
+        if (currentLanguage != null) currentLanguage.setText("Tiếng Việt");
+        if (currentTempUnit != null) currentTempUnit.setText("°C");
 
         // Handle language click
-        languageSetting.setOnClickListener(v -> {
-            dialog.dismiss();
-            showLanguagePopup();
-        });
+        if (languageSetting != null) {
+            languageSetting.setOnClickListener(v -> {
+                dialog.dismiss();
+                showLanguagePopup();
+            });
+        }
 
         // Handle temperature click
-        temperatureSetting.setOnClickListener(v -> {
-            dialog.dismiss();
-            showTemperaturePopup();
-        });
+        if (temperatureSetting != null) {
+            temperatureSetting.setOnClickListener(v -> {
+                dialog.dismiss();
+                showTemperaturePopup();
+            });
+        }
 
         dialog.show();
     }
@@ -332,25 +416,29 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         LinearLayout englishOption = view.findViewById(R.id.english_option);
-        LinearLayout vietnameseOption = view        .findViewById(R.id.vietnamese_option);
+        LinearLayout vietnameseOption = view.findViewById(R.id.vietnamese_option);
         ImageView englishCheck = view.findViewById(R.id.english_check);
         ImageView vietnameseCheck = view.findViewById(R.id.vietnamese_check);
 
         // Show check mark for current selection - mặc định Vietnamese
-        englishCheck.setVisibility(View.GONE);
-        vietnameseCheck.setVisibility(View.VISIBLE);
+        if (englishCheck != null) englishCheck.setVisibility(View.GONE);
+        if (vietnameseCheck != null) vietnameseCheck.setVisibility(View.VISIBLE);
 
-        englishOption.setOnClickListener(v -> {
-            // Chỉ đóng popup, không xử lý logic
-            dialog.dismiss();
-            Toast.makeText(this, "Đã chọn English", Toast.LENGTH_SHORT).show();
-        });
+        if (englishOption != null) {
+            englishOption.setOnClickListener(v -> {
+                // Chỉ đóng popup, không xử lý logic
+                dialog.dismiss();
+                Toast.makeText(this, "Đã chọn English", Toast.LENGTH_SHORT).show();
+            });
+        }
 
-        vietnameseOption.setOnClickListener(v -> {
-            // Chỉ đóng popup, không xử lý logic
-            dialog.dismiss();
-            Toast.makeText(this, "Đã chọn Tiếng Việt", Toast.LENGTH_SHORT).show();
-        });
+        if (vietnameseOption != null) {
+            vietnameseOption.setOnClickListener(v -> {
+                // Chỉ đóng popup, không xử lý logic
+                dialog.dismiss();
+                Toast.makeText(this, "Đã chọn Tiếng Việt", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         dialog.show();
     }
@@ -369,23 +457,29 @@ public class FavoriteLocationsActivity extends BaseActivity { // Thay đổi t�
         ImageView fahrenheitCheck = view.findViewById(R.id.fahrenheit_check);
 
         // Show check mark for current selection - mặc định Celsius
-        celsiusCheck.setVisibility(View.VISIBLE);
-        fahrenheitCheck.setVisibility(View.GONE);
+        if (celsiusCheck != null) celsiusCheck.setVisibility(View.VISIBLE);
+        if (fahrenheitCheck != null) fahrenheitCheck.setVisibility(View.GONE);
 
-        celsiusOption.setOnClickListener(v -> {
-            // Chỉ đóng popup, không xử lý logic
-            dialog.dismiss();
-            Toast.makeText(this, "Đã chọn °C", Toast.LENGTH_SHORT).show();
-        });
+        if (celsiusOption != null) {
+            celsiusOption.setOnClickListener(v -> {
+                // Chỉ đóng popup, không xử lý logic
+                dialog.dismiss();
+                Toast.makeText(this, "Đã chọn °C", Toast.LENGTH_SHORT).show();
+            });
+        }
 
-        fahrenheitOption.setOnClickListener(v -> {
-            // Chỉ đóng popup, không xử lý logic
-            dialog.dismiss();
-            Toast.makeText(this, "Đã chọn °F", Toast.LENGTH_SHORT).show();
-        });
+        if (fahrenheitOption != null) {
+            fahrenheitOption.setOnClickListener(v -> {
+                // Chỉ đóng popup, không xử lý logic
+                dialog.dismiss();
+                Toast.makeText(this, "Đã chọn °F", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         dialog.show();
     }
+
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {

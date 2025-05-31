@@ -12,11 +12,19 @@ public class WeatherResponse {
         public String localtime;
     }
 
-    public static class Current {
+    public class Current {
         public double temp_c;
-        public Condition condition;
-        public double wind_kph;
+        public double temp_f;
+        public double feelslike_c;
+        public double feelslike_f;
         public int humidity;
+        public double vis_km;
+        public double precip_mm;
+        public double wind_kph;
+        public int wind_degree;
+        public String wind_dir;
+        public double pressure_mb;
+        public Condition condition;
     }
 
     public static class Condition {
@@ -38,8 +46,8 @@ public class WeatherResponse {
         public double mintemp_c;
     }
     public static class Astro {
-        public String sunrise;  // ví dụ: "05:15 AM"
-        public String sunset;   // ví dụ: "06:33 PM"
+        public String sunrise;
+        public String sunset;
         public String moonrise;
         public String moonset;
         public String moon_phase;
