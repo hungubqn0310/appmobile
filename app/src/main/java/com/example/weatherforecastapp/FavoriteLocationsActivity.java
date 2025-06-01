@@ -37,7 +37,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class FavoriteLocationsActivity extends BaseActivity {
@@ -51,38 +53,97 @@ public class FavoriteLocationsActivity extends BaseActivity {
     private static final String PREFS_NAME = "FavoriteLocationsPrefs";
     private static final String KEY_FAVORITE_CITIES = "favoriteCities";
 
+    // Language settings
+    private static final String SETTINGS_PREFS = "SettingsPrefs";
+    private static final String KEY_LANGUAGE = "language";
+    private static final String KEY_TEMPERATURE_UNIT = "temperature_unit";
+    private static final String LANG_VIETNAMESE = "vi";
+    private static final String LANG_ENGLISH = "en";
+    private static final String TEMP_CELSIUS = "celsius";
+    private static final String TEMP_FAHRENHEIT = "fahrenheit";
+
+    private SharedPreferences settingsPrefs;
+    private String currentLanguage = LANG_VIETNAMESE;
+    private String currentTempUnit = TEMP_CELSIUS;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.favorite_locations);
+
+        // Initialize settings preferences
+        settingsPrefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
+        currentLanguage = settingsPrefs.getString(KEY_LANGUAGE, LANG_VIETNAMESE);
+        currentTempUnit = settingsPrefs.getString(KEY_TEMPERATURE_UNIT, TEMP_CELSIUS);
 
         // Khởi tạo background ngay sau setContentView
         initializeBackground();
 
         // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-
+        // Cập nhật tiêu đề
+        TextView tvTitle = findViewById(R.id.tvTitle);
+        if (tvTitle != null) {
+            tvTitle.setText(getLocalizedString("FAVORITE_LOCATIONS"));
+        }
         // Initialize animation
         TextView tvSlide = findViewById(R.id.tvSlide);
         if (tvSlide != null) {
             Animation pulse = AnimationUtils.loadAnimation(this, R.anim.slide_left_to_right);
             tvSlide.startAnimation(pulse);
+            tvSlide.setText(getLocalizedString("SLIDE_TO_RETURN"));
         }
 
         // Initialize location client
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Setup settings button if exists
-        ImageView settingsButton = findViewById(R.id.settings_button);
-        if (settingsButton != null) {
-            settingsButton.setOnClickListener(v -> showSettingsPopup());
-        }
 
         // Setup gesture detector for swipe navigation
         setupGestureDetector();
 
         // Setup location cards
         setupLocationCards();
+    }
+
+    // Language localization
+    private static final class LanguageStrings {
+        // Vietnamese strings
+        private static final Map<String, String> VI = new HashMap<String, String>() {{
+            put("MY_LOCATION", "Vị trí của tôi");
+            put("LOADING", "Đang tải...");
+            put("LOCATION_UNAVAILABLE", "Không xác định được vị trí");
+            put("LOCATION_ERROR", "Lỗi lấy vị trí");
+            put("WEATHER_DATA_ERROR", "Lỗi dữ liệu thời tiết");
+            put("API_ERROR", "Lỗi API thời tiết");
+            put("CONNECTION_ERROR", "Lỗi kết nối API");
+            put("GO_TO_WEATHER", "Chuyển đến thời tiết tại");
+            put("DEFAULT_LOCATION", "Không thể lấy vị trí hiện tại, sử dụng Hà Nội");
+            put("SLIDE_TO_RETURN", "Vuốt sang phải để quay lại");
+            put("NO_NETWORK", "Không có kết nối mạng");
+            put("FAVORITE_LOCATIONS", "Địa điểm yêu thích");
+        }};
+
+        // English strings
+        private static final Map<String, String> EN = new HashMap<String, String>() {{
+            put("MY_LOCATION", "My Location");
+            put("LOADING", "Loading...");
+            put("LOCATION_UNAVAILABLE", "Location unavailable");
+            put("LOCATION_ERROR", "Location error");
+            put("WEATHER_DATA_ERROR", "Weather data error");
+            put("API_ERROR", "Weather API error");
+            put("CONNECTION_ERROR", "API connection error");
+            put("GO_TO_WEATHER", "Going to weather in");
+            put("DEFAULT_LOCATION", "Unable to get current location, using Hanoi");
+            put("SLIDE_TO_RETURN", "Swipe right to return");
+            put("NO_NETWORK", "No network connection");
+            put("FAVORITE_LOCATIONS", "Favorite Locations");
+        }};
+    }
+
+    private String getLocalizedString(String key) {
+        Map<String, String> strings = currentLanguage.equals(LANG_VIETNAMESE) ?
+                LanguageStrings.VI : LanguageStrings.EN;
+        String value = strings.get(key);
+        return value != null ? value : key;
     }
 
     private void setupGestureDetector() {
@@ -160,8 +221,8 @@ public class FavoriteLocationsActivity extends BaseActivity {
         TextView tvHighTemp = myLocationCard.findViewById(R.id.tvHighTemp);
         TextView tvLowTemp = myLocationCard.findViewById(R.id.tvLowTemp);
 
-        tvLocationTitle.setText("Vị trí của tôi");
-        tvCityName.setText("Đang tải...");
+        tvLocationTitle.setText(getLocalizedString("MY_LOCATION"));
+        tvCityName.setText(getLocalizedString("LOADING"));
 
         requestLocationAndFetchWeather(tvCityName, tvTime, tvWeatherStatus, tvTemperature, tvHighTemp, tvLowTemp);
 
@@ -170,9 +231,11 @@ public class FavoriteLocationsActivity extends BaseActivity {
             Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
             String cityName = tvCityName.getText().toString();
 
-            if (cityName.equals("Đang tải...") || cityName.equals("Không xác định được vị trí") || cityName.equals("Lỗi lấy vị trí")) {
+            if (cityName.equals(getLocalizedString("LOADING")) ||
+                    cityName.equals(getLocalizedString("LOCATION_UNAVAILABLE")) ||
+                    cityName.equals(getLocalizedString("LOCATION_ERROR"))) {
                 intent.putExtra("SELECTED_CITY", "Hanoi");
-                Toast.makeText(this, "Không thể lấy vị trí hiện tại, sử dụng Hà Nội", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getLocalizedString("DEFAULT_LOCATION"), Toast.LENGTH_SHORT).show();
             } else {
                 intent.putExtra("SELECTED_CITY", cityName);
             }
@@ -204,7 +267,7 @@ public class FavoriteLocationsActivity extends BaseActivity {
             Intent intent = new Intent(FavoriteLocationsActivity.this, MainActivity.class);
             intent.putExtra("SELECTED_CITY", city);
 
-            Toast.makeText(this, "Chuyển đến thời tiết tại " + city, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getLocalizedString("GO_TO_WEATHER") + " " + city, Toast.LENGTH_SHORT).show();
             Log.d("FavoriteLocations", "Using location: " + city);
 
             startActivity(intent);
@@ -232,12 +295,12 @@ public class FavoriteLocationsActivity extends BaseActivity {
                         double lon = location.getLongitude();
                         fetchWeatherByCoordinates(lat, lon, tvCityName, tvTime, tvWeatherStatus, tvTemperature, tvHighTemp, tvLowTemp);
                     } else {
-                        tvCityName.setText("Không xác định được vị trí");
+                        tvCityName.setText(getLocalizedString("LOCATION_UNAVAILABLE"));
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FavoriteLocations", "Error getting location", e);
-                    tvCityName.setText("Lỗi lấy vị trí");
+                    tvCityName.setText(getLocalizedString("LOCATION_ERROR"));
                 });
     }
 
@@ -262,7 +325,7 @@ public class FavoriteLocationsActivity extends BaseActivity {
 
         WeatherApiService apiService = retrofit.create(WeatherApiService.class);
         String latlon = lat + "," + lon;
-        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", latlon, 1, "vi");
+        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", latlon, 1, currentLanguage);
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
@@ -295,22 +358,20 @@ public class FavoriteLocationsActivity extends BaseActivity {
                             tvLowTemp.setText("T:" + weather.forecast.forecastday.get(0).day.mintemp_c + "°");
                         }
 
-
-
                     } catch (Exception e) {
                         Log.e("FavoriteLocations", "Error parsing weather data", e);
-                        tvCityName.setText("Lỗi dữ liệu thời tiết");
+                        tvCityName.setText(getLocalizedString("WEATHER_DATA_ERROR"));
                     }
                 } else {
                     Log.e("FavoriteLocations", "Weather API response not successful: " + response.code());
-                    tvCityName.setText("Lỗi API thời tiết");
+                    tvCityName.setText(getLocalizedString("API_ERROR"));
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
                 Log.e("FavoriteLocations", "Weather API call failed", t);
-                tvCityName.setText("Lỗi kết nối API");
+                tvCityName.setText(getLocalizedString("CONNECTION_ERROR"));
             }
         });
     }
@@ -322,7 +383,7 @@ public class FavoriteLocationsActivity extends BaseActivity {
                 .build();
 
         WeatherApiService apiService = retrofit.create(WeatherApiService.class);
-        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", city, 1, "vi");
+        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", city, 1, currentLanguage);
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
@@ -350,8 +411,6 @@ public class FavoriteLocationsActivity extends BaseActivity {
                             tvLowTemp.setText("T:" + weather.forecast.forecastday.get(0).day.mintemp_c + "°");
                         }
 
-
-
                     } catch (Exception e) {
                         Log.e("FavoriteLocations", "Error parsing weather data for " + city, e);
                     }
@@ -366,120 +425,6 @@ public class FavoriteLocationsActivity extends BaseActivity {
             }
         });
     }
-
-    // Settings popup methods - chỉ làm giao diện, không xử lý logic thật
-    private void showSettingsPopup() {
-        Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        View view = LayoutInflater.from(this).inflate(R.layout.popup_settings, null);
-        dialog.setContentView(view);
-
-        // Make background transparent
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        // Find views
-        LinearLayout languageSetting = view.findViewById(R.id.language_setting);
-        LinearLayout temperatureSetting = view.findViewById(R.id.temperature_setting);
-        TextView currentLanguage = view.findViewById(R.id.current_language);
-        TextView currentTempUnit = view.findViewById(R.id.current_temperature_unit);
-
-        // Display current values - mặc định
-        if (currentLanguage != null) currentLanguage.setText("Tiếng Việt");
-        if (currentTempUnit != null) currentTempUnit.setText("°C");
-
-        // Handle language click
-        if (languageSetting != null) {
-            languageSetting.setOnClickListener(v -> {
-                dialog.dismiss();
-                showLanguagePopup();
-            });
-        }
-
-        // Handle temperature click
-        if (temperatureSetting != null) {
-            temperatureSetting.setOnClickListener(v -> {
-                dialog.dismiss();
-                showTemperaturePopup();
-            });
-        }
-
-        dialog.show();
-    }
-
-    private void showLanguagePopup() {
-        Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        View view = LayoutInflater.from(this).inflate(R.layout.popup_language, null);
-        dialog.setContentView(view);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        LinearLayout englishOption = view.findViewById(R.id.english_option);
-        LinearLayout vietnameseOption = view.findViewById(R.id.vietnamese_option);
-        ImageView englishCheck = view.findViewById(R.id.english_check);
-        ImageView vietnameseCheck = view.findViewById(R.id.vietnamese_check);
-
-        // Show check mark for current selection - mặc định Vietnamese
-        if (englishCheck != null) englishCheck.setVisibility(View.GONE);
-        if (vietnameseCheck != null) vietnameseCheck.setVisibility(View.VISIBLE);
-
-        if (englishOption != null) {
-            englishOption.setOnClickListener(v -> {
-                // Chỉ đóng popup, không xử lý logic
-                dialog.dismiss();
-                Toast.makeText(this, "Đã chọn English", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        if (vietnameseOption != null) {
-            vietnameseOption.setOnClickListener(v -> {
-                // Chỉ đóng popup, không xử lý logic
-                dialog.dismiss();
-                Toast.makeText(this, "Đã chọn Tiếng Việt", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        dialog.show();
-    }
-
-    private void showTemperaturePopup() {
-        Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        View view = LayoutInflater.from(this).inflate(R.layout.popup_temperature, null);
-        dialog.setContentView(view);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        LinearLayout celsiusOption = view.findViewById(R.id.celsius_option);
-        LinearLayout fahrenheitOption = view.findViewById(R.id.fahrenheit_option);
-        ImageView celsiusCheck = view.findViewById(R.id.celsius_check);
-        ImageView fahrenheitCheck = view.findViewById(R.id.fahrenheit_check);
-
-        // Show check mark for current selection - mặc định Celsius
-        if (celsiusCheck != null) celsiusCheck.setVisibility(View.VISIBLE);
-        if (fahrenheitCheck != null) fahrenheitCheck.setVisibility(View.GONE);
-
-        if (celsiusOption != null) {
-            celsiusOption.setOnClickListener(v -> {
-                // Chỉ đóng popup, không xử lý logic
-                dialog.dismiss();
-                Toast.makeText(this, "Đã chọn °C", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        if (fahrenheitOption != null) {
-            fahrenheitOption.setOnClickListener(v -> {
-                // Chỉ đóng popup, không xử lý logic
-                dialog.dismiss();
-                Toast.makeText(this, "Đã chọn °F", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        dialog.show();
-    }
-
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {

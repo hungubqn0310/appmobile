@@ -8,14 +8,15 @@
     android:padding="16dp">
 
     <TextView
+        android:id="@+id/setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cài đặt"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
+        android:layout_marginBottom="16dp"
         android:gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:text="Cài đặt"
+        android:textColor="#333333"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <!-- Language Setting -->
     <LinearLayout
@@ -36,13 +37,14 @@
             android:layout_marginEnd="12dp" />
 
         <TextView
+            android:id="@+id/language"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Ngôn ngữ"
             android:paddingRight="16dp"
-            android:textSize="16sp"
-            android:textColor="#333333" />
+            android:text="Ngôn ngữ"
+            android:textColor="#333333"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/current_language"
@@ -78,13 +80,14 @@
             android:layout_marginEnd="12dp" />
 
         <TextView
+            android:id="@+id/temperature"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Đơn vị độ"
             android:paddingRight="16dp"
-            android:textSize="16sp"
-            android:textColor="#333333" />
+            android:text="Đơn vị độ"
+            android:textColor="#333333"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/current_temperature_unit"

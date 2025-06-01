@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.util.Log;
@@ -31,8 +32,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -74,6 +77,7 @@ public class ForecastReportActivity extends BaseActivity {
         setContentView(R.layout.activity_forecast_report);
 
         initializeComponents();
+        updateLabels();
         setupEventListeners();
         loadWeatherData();
     }
@@ -105,7 +109,83 @@ public class ForecastReportActivity extends BaseActivity {
         tvTrangLan = findViewById(R.id.tvTrangLan);
 //        tvMoonPhase = findViewById(R.id.tvMoonPhase);
     }
+    private static final class LanguageStrings {
+        // Tiếng Việt
+        private static final Map<String, String> VI = new HashMap<String, String>() {{
+            put("BACK","Quay về");
+            put("TODAY", "Hôm nay");
+            put("NEXT_7_DAYS", "Dự báo 7 ngày tới");
+            put("FEELS_LIKE", "Cảm nhận");
+            put("HUMIDITY", "Độ ẩm");
+            put("VISIBILITY", "Tầm nhìn");
+            put("PRECIPITATION", "Lượng mưa");
+            put("SUNRISE", "Bình minh");
+            put("SUNSET", "Hoàng hôn");
+            put("MOONRISE", "Trăng mọc");
+            put("MOONSET", "Trăng lặn");
+            put("PRESSURE", "Áp suất");
+            put("WIND", "Gió");
+            put("SETTINGS", "Cài đặt");
+            put("LANGUAGE", "Ngôn ngữ");
+            put("TEMPERATURE", "Đơn vị nhiệt độ");
+        }};
 
+        // English
+        private static final Map<String, String> EN = new HashMap<String, String>() {{
+            put("BACK","Back");
+            put("TODAY", "Today");
+            put("NEXT_7_DAYS", "Forecast on 7 days");
+            put("FEELS_LIKE", "Feels like");
+            put("HUMIDITY", "Humidity");
+            put("VISIBILITY", "Visibility");
+            put("PRECIPITATION", "Precipitation");
+            put("SUNRISE", "Sunrise");
+            put("SUNSET", "Sunset");
+            put("MOONRISE", "Moonrise");
+            put("MOONSET", "Moonset");
+            put("PRESSURE", "Pressure");
+            put("WIND", "Wind");
+            put("SETTINGS", "Settings");
+            put("LANGUAGE", "Language");
+            put("TEMPERATURE", "Temperature Unit");
+        }};
+    }
+
+    private String getLocalizedString(String key) {
+        Map<String, String> strings = currentLanguage.equals(LANG_VIETNAMESE) ?
+                LanguageStrings.VI : LanguageStrings.EN;
+        String value = strings.get(key);
+        return value != null ? value : key;
+    }
+    private void updateLabels() {
+        // Cập nhật các label cố định
+        TextView tvBackbutton = findViewById(R.id.back_button);
+        TextView tvToday = findViewById(R.id.today);
+        TextView tvNextForecast = findViewById(R.id.next_forecast_title);
+        TextView labelFeelsLike = findViewById(R.id.label_feels_like);
+        TextView labelHumidity = findViewById(R.id.label_humidity);
+        TextView labelVisibility = findViewById(R.id.label_visibility);
+        TextView labelPrecipitation = findViewById(R.id.label_precipitation);
+        TextView labelSunrise = findViewById(R.id.label_sunrise);
+        TextView labelSunset = findViewById(R.id.label_sunset);
+        TextView labelMoonrise = findViewById(R.id.label_moonrise);
+        TextView labelMoonset = findViewById(R.id.label_moonset);
+        TextView labelPressure = findViewById(R.id.label_pressure);
+        TextView labelWind = findViewById(R.id.label_wind);
+        if(tvBackbutton != null) tvBackbutton.setText(getLocalizedString("BACK"));
+        if (tvToday != null) tvToday.setText(getLocalizedString("TODAY"));
+        if (tvNextForecast != null) tvNextForecast.setText(getLocalizedString("NEXT_7_DAYS"));
+        if (labelFeelsLike != null) labelFeelsLike.setText(getLocalizedString("FEELS_LIKE"));
+        if (labelHumidity != null) labelHumidity.setText(getLocalizedString("HUMIDITY"));
+        if (labelVisibility != null) labelVisibility.setText(getLocalizedString("VISIBILITY"));
+        if (labelPrecipitation != null) labelPrecipitation.setText(getLocalizedString("PRECIPITATION"));
+        if (labelSunrise != null) labelSunrise.setText(getLocalizedString("SUNRISE"));
+        if (labelSunset != null) labelSunset.setText(getLocalizedString("SUNSET"));
+        if (labelMoonrise != null) labelMoonrise.setText(getLocalizedString("MOONRISE"));
+        if (labelMoonset != null) labelMoonset.setText(getLocalizedString("MOONSET"));
+        if (labelPressure != null) labelPressure.setText(getLocalizedString("PRESSURE"));
+        if (labelWind != null) labelWind.setText(getLocalizedString("WIND"));
+    }
     private void setupEventListeners() {
         // Settings button
         ImageView settingsButton = findViewById(R.id.settings_button);
@@ -447,48 +527,89 @@ public class ForecastReportActivity extends BaseActivity {
         // Lượng mưa
         if (tvLuongMua != null && current.has("precip_mm")) {
             double precipMm = current.get("precip_mm").getAsDouble();
-            String precipText = precipMm == 0 ? "Không mưa" : String.format(Locale.getDefault(), "%.1f mm", precipMm);
+            String precipText;
+            if (currentLanguage.equals(LANG_ENGLISH)) {
+                precipText = precipMm == 0 ? "No rain" : String.format(Locale.getDefault(), "%.1f mm", precipMm);
+            } else {
+                precipText = precipMm == 0 ? "Không mưa" : String.format(Locale.getDefault(), "%.1f mm", precipMm);
+            }
             tvLuongMua.setText(precipText);
         } else if (tvLuongMua != null) {
-            tvLuongMua.setText("Không xác định");
+            tvLuongMua.setText(currentLanguage.equals(LANG_ENGLISH) ? "Undefined" : "Không xác định");
         }
     }
 
     // Phương thức mô tả cảm nhận nhiệt độ
     private String getFeelsLikeDescription(double feelsLike) {
-        if (feelsLike < 10) {
-            return "Rất lạnh";
-        } else if (feelsLike < 16) {
-            return "Lạnh";
-        } else if (feelsLike < 20) {
-            return "Mát mẻ";
-        } else if (feelsLike < 25) {
-            return "Dễ chịu";
-        } else if (feelsLike < 30) {
-            return "Ấm áp";
-        } else if (feelsLike < 35) {
-            return "Nóng";
-        } else if (feelsLike < 40) {
-            return "Rất nóng";
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            if (feelsLike < 10) {
+                return "Very cold";
+            } else if (feelsLike < 16) {
+                return "Cold";
+            } else if (feelsLike < 20) {
+                return "Cool";
+            } else if (feelsLike < 25) {
+                return "Comfortable";
+            } else if (feelsLike < 30) {
+                return "Warm";
+            } else if (feelsLike < 35) {
+                return "Hot";
+            } else if (feelsLike < 40) {
+                return "Very hot";
+            } else {
+                return "Extremely hot";
+            }
         } else {
-            return "Cực kỳ nóng";
+            if (feelsLike < 10) {
+                return "Rất lạnh";
+            } else if (feelsLike < 16) {
+                return "Lạnh";
+            } else if (feelsLike < 20) {
+                return "Mát mẻ";
+            } else if (feelsLike < 25) {
+                return "Dễ chịu";
+            } else if (feelsLike < 30) {
+                return "Ấm áp";
+            } else if (feelsLike < 35) {
+                return "Nóng";
+            } else if (feelsLike < 40) {
+                return "Rất nóng";
+            } else {
+                return "Cực kỳ nóng";
+            }
         }
     }
 
     // Phương thức mô tả tầm nhìn
     private String getVisibilityDescription(double visibility) {
-        if (visibility >= 10) {
-            return "Tầm nhìn hoàn toàn rõ";
-        } else if (visibility >= 5) {
-            return "Tầm nhìn tốt";
-        } else if (visibility >= 2) {
-            return "Tầm nhìn trung bình";
-        } else if (visibility >= 1) {
-            return "Tầm nhìn hạn chế";
-        } else if (visibility >= 0.5) {
-            return "Tầm nhìn kém";
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            if (visibility >= 10) {
+                return "Perfect visibility";
+            } else if (visibility >= 5) {
+                return "Good visibility";
+            } else if (visibility >= 2) {
+                return "Moderate visibility";
+            } else if (visibility >= 1) {
+                return "Limited visibility";
+            } else if (visibility >= 0.5) {
+                return "Poor visibility";
+            } else {
+                return "Dense fog";
+            }
         } else {
-            return "Sương mù dày đặc";
+            if (visibility >= 10) {
+                return "Tầm nhìn hoàn toàn rõ";
+            } else if (visibility >= 5) {
+                return "Tầm nhìn tốt";
+            } else if (visibility >= 2) {
+                return "Tầm nhìn trung bình";
+            } else if (visibility >= 1) {
+                return "Tầm nhìn hạn chế";
+            } else if (visibility >= 0.5) {
+                return "Tầm nhìn kém";
+            } else {
+                return "Sương mù dày đặc";
+            }
         }
     }
 
@@ -634,6 +755,27 @@ public class ForecastReportActivity extends BaseActivity {
         TextView currentLanguageText = view.findViewById(R.id.current_language);
         TextView currentTempUnitText = view.findViewById(R.id.current_temperature_unit);
 
+        // Tìm và cập nhật các TextView tiêu đề trong popup_settings.xml
+        TextView settingsTitle = view.findViewById(R.id.setting); // ID có thể khác
+        TextView languageLabel = view.findViewById(R.id.language); // ID có thể khác
+        TextView temperatureLabel = view.findViewById(R.id.temperature); // ID có thể khác
+
+        // Hoặc nếu ID khác, thay đổi theo ID thực tế trong XML:
+        // TextView settingsTitle = view.findViewById(R.id.tv_settings);
+        // TextView languageLabel = view.findViewById(R.id.tv_language);
+        // TextView temperatureLabel = view.findViewById(R.id.tv_temperature);
+
+        // Cập nhật text theo ngôn ngữ hiện tại
+        if (settingsTitle != null) {
+            settingsTitle.setText(getLocalizedString("SETTINGS"));
+        }
+        if (languageLabel != null) {
+            languageLabel.setText(getLocalizedString("LANGUAGE"));
+        }
+        if (temperatureLabel != null) {
+            temperatureLabel.setText(getLocalizedString("TEMPERATURE"));
+        }
+
         // Hiển thị cài đặt hiện tại
         currentLanguageText.setText(currentLanguage.equals(LANG_ENGLISH) ? "English" : "Tiếng Việt");
         currentTempUnitText.setText(currentTempUnit.equals(TEMP_FAHRENHEIT) ? "°F" : "°C");
@@ -667,6 +809,7 @@ public class ForecastReportActivity extends BaseActivity {
         englishOption.setOnClickListener(v -> {
             currentLanguage = LANG_ENGLISH;
             saveLanguageSetting();
+            updateLabels();
             dialog.dismiss();
             reloadWeatherData(); // Tải lại dữ liệu với ngôn ngữ mới
             Toast.makeText(this, "Language changed to English", Toast.LENGTH_SHORT).show();
@@ -675,6 +818,7 @@ public class ForecastReportActivity extends BaseActivity {
         vietnameseOption.setOnClickListener(v -> {
             currentLanguage = LANG_VIETNAMESE;
             saveLanguageSetting();
+            updateLabels();
             dialog.dismiss();
             reloadWeatherData(); // Tải lại dữ liệu với ngôn ngữ mới
             Toast.makeText(this, "Đã chọn Tiếng Việt", Toast.LENGTH_SHORT).show();

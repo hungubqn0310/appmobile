@@ -1053,12 +1053,13 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/label_sunrise"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="Bình minh"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:alpha="0.8" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tvBinhMinh"
@@ -1081,12 +1082,13 @@
                     android:gravity="end">
 
                     <TextView
+                        android:id="@+id/label_sunset"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="Hoàng hôn"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:alpha="0.8" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tvHoangHon"
@@ -1128,12 +1130,13 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/label_moonrise"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="Mặt trăng mọc"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:alpha="0.8" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tvTrangMoc"
@@ -1163,12 +1166,13 @@
                     android:gravity="end">
 
                     <TextView
+                        android:id="@+id/label_moonset"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="Mặt trăng lặn"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:alpha="0.8" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tvTrangLan"
@@ -1232,12 +1236,13 @@
                         android:layout_marginEnd="8dp" />
 
                     <TextView
+                        android:id="@+id/label_wind"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="GIÓ"
                         android:textColor="#000000"
-                        android:textSize="12sp"
-                        android:alpha="0.8" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -1272,12 +1277,13 @@
                         android:layout_marginEnd="8dp" />
 
                     <TextView
+                        android:id="@+id/label_pressure"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="ÁP SUẤT"
                         android:textColor="#000000"
-                        android:textSize="12sp"
-                        android:alpha="0.8" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -1325,12 +1331,13 @@
                         android:layout_marginEnd="8dp" />
 
                     <TextView
+                        android:id="@+id/label_feels_like"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="CẢM NHẬN"
                         android:textColor="#000000"
-                        android:textSize="12sp"
-                        android:alpha="0.8" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -1369,12 +1376,13 @@
                         android:layout_marginEnd="8dp" />
 
                     <TextView
+                        android:id="@+id/label_humidity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="ĐỘ ẨM"
                         android:textColor="#000000"
-                        android:textSize="12sp"
-                        android:alpha="0.8" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -1421,12 +1429,13 @@
                     android:layout_marginEnd="8dp" />
 
                 <TextView
+                    android:id="@+id/label_visibility"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:alpha="0.8"
                     android:text="TẦM NHÌN"
                     android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:alpha="0.8" />
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
@@ -1465,12 +1474,13 @@
                         android:layout_marginEnd="8dp" />
 
                     <TextView
+                        android:id="@+id/label_precipitation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alpha="0.8"
                         android:text="LƯỢNG MƯA"
                         android:textColor="#000000"
-                        android:textSize="12sp"
-                        android:alpha="0.8" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 

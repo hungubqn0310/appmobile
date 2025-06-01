@@ -8,14 +8,15 @@
     android:padding="16dp">
 
     <TextView
+        android:id="@+id/select_temperature"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Chọn đơn vị nhiệt độ"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
+        android:layout_marginBottom="16dp"
         android:gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:text="Chọn đơn vị nhiệt độ"
+        android:textColor="#333333"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <!-- Celsius Option -->
     <LinearLayout

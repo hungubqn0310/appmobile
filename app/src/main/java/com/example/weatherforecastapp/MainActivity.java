@@ -38,11 +38,22 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import android.text.Html;
 import android.text.Spanned;
 
 public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatActivity thành BaseActivity
+    private static final String SETTINGS_PREFS = "SettingsPrefs";
+    private static final String KEY_LANGUAGE = "language";
+    private static final String KEY_TEMPERATURE_UNIT = "temperature_unit";
+    private static final String LANG_VIETNAMESE = "vi";
+    private static final String LANG_ENGLISH = "en";
+    private static final String TEMP_CELSIUS = "celsius";
+    private static final String TEMP_FAHRENHEIT = "fahrenheit";
+    private SharedPreferences settingsPrefs;
+    private String currentLanguage = LANG_VIETNAMESE;
+    private String currentTempUnit = TEMP_CELSIUS;
     private GestureDetector gestureDetector;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private FusedLocationProviderClient fusedLocationClient;
@@ -53,21 +64,25 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
     ImageView ivNotification, ivWeatherIcon;
     ImageView ivLove;
     View notificationBadge;
-    Button btnForecast;
     FrameLayout notificationContainer;
     FrameLayout rainContainer;
     RainView rainView;
     private Animation loadingAnimation;
-
+    TextView tvWindLabel, tvHumidityLabel; // Thêm dòng này
+    TextView tvSlide;
+    Button btnForecast, btnMyLocation;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-// Khởi tạo animation loading
+        // Thêm sau setContentView
+        initializeSettings();
+        // Khởi tạo animation loading
         loadingAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate_loading);
         // Khởi tạo background ngay sau setContentView
         initializeBackground();
-
+        // Khởi tạo labels ban đầu
+        updateLabels();
         TextView tvSlide = findViewById(R.id.tvSlide);
         Animation pulse = AnimationUtils.loadAnimation(this, R.anim.slide_right_to_left);
         tvSlide.startAnimation(pulse);
@@ -101,10 +116,15 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         notificationContainer = findViewById(R.id.notificationContainer);
         notificationBadge = findViewById(R.id.notificationBadge);
         rainContainer = findViewById(R.id.rainContainer);
+        tvWindLabel = findViewById(R.id.tvWindLabel); // Thêm dòng này
+        tvHumidityLabel = findViewById(R.id.tvHumidityLabel); // Thêm dòng này
+
+
+        btnForecast = findViewById(R.id.btnForecast);
 
         // Khởi tạo hiệu ứng mưa
         setupRainEffect();
-
+        updateLabels();
         // Luôn hiển thị red dot khi mở app
         notificationBadge.setVisibility(View.VISIBLE);
 
@@ -144,17 +164,26 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         ivLove.setSelected(favoriteCities.contains(tvCity.getText().toString()));
 
         // Xử lý nhấp vào icon love
+        // Trong ivLove.setOnClickListener
         ivLove.setOnClickListener(v -> {
             v.startAnimation(scaleAnimation);
             Set<String> updatedFavorites = new HashSet<>(sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>()));
             String currentCity = tvCity.getText().toString();
+
+            String message;
             if (ivLove.isSelected()) {
                 updatedFavorites.remove(currentCity);
-                Toast.makeText(this, "Đã gỡ " + currentCity + " khỏi địa điểm yêu thích", Toast.LENGTH_SHORT).show();
+                message = currentLanguage.equals(LANG_ENGLISH) ?
+                        "Removed " + currentCity + " from favorites" :
+                        "Đã gỡ " + currentCity + " khỏi địa điểm yêu thích";
             } else {
                 updatedFavorites.add(currentCity);
-                Toast.makeText(this, "Đã thêm " + currentCity + " vào địa điểm yêu thích", Toast.LENGTH_SHORT).show();
+                message = currentLanguage.equals(LANG_ENGLISH) ?
+                        "Added " + currentCity + " to favorites" :
+                        "Đã thêm " + currentCity + " vào địa điểm yêu thích";
             }
+
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             ivLove.setSelected(!ivLove.isSelected());
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putStringSet(KEY_FAVORITE_CITIES, updatedFavorites);
@@ -166,13 +195,18 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
         // Click thông báo
         // Click thông báo - thêm kiểm tra
+        // Trong notificationContainer.setOnClickListener
         notificationContainer.setOnClickListener(v -> {
-            // Kiểm tra xem có dữ liệu thời tiết không
             String tempText = tvTemperature.getText().toString();
             String weatherCondition = tvWeatherStatus.getText().toString();
 
-            if (tempText.equals("--°") || weatherCondition.equals("Đang tải...") || weatherCondition.isEmpty()) {
-                Toast.makeText(this, "Đang tải dữ liệu thời tiết, vui lòng thử lại sau", Toast.LENGTH_SHORT).show();
+            if (tempText.equals("--°") || weatherCondition.equals("Đang tải...") ||
+                    weatherCondition.equals("Loading...") || weatherCondition.isEmpty()) {
+
+                String message = currentLanguage.equals(LANG_ENGLISH) ?
+                        "Loading weather data, please try again later" :
+                        "Đang tải dữ liệu thời tiết, vui lòng thử lại sau";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             } else {
                 showNotificationPopup();
             }
@@ -205,7 +239,23 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
             }
         });
     }
+    private void initializeSettings() {
+        settingsPrefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
+        currentLanguage = settingsPrefs.getString(KEY_LANGUAGE, LANG_VIETNAMESE);
+        currentTempUnit = settingsPrefs.getString(KEY_TEMPERATURE_UNIT, TEMP_CELSIUS);
+    }
+    private double convertTemperature(double celsius) {
+        if (currentTempUnit.equals(TEMP_FAHRENHEIT)) {
+            return (celsius * 9.0 / 5.0) + 32;
+        }
+        return celsius;
+    }
 
+    private String formatTemperature(double celsius) {
+        double temp = convertTemperature(celsius);
+        String unit = currentTempUnit.equals(TEMP_FAHRENHEIT) ? "°F" : "°C";
+        return String.format(Locale.getDefault(), "%.0f%s", temp, unit);
+    }
     // Thêm method kiểm tra kết nối mạng
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -263,7 +313,10 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getLastLocationAndFetchWeather();
             } else {
-                Toast.makeText(this, "Quyền truy cập vị trí bị từ chối, sử dụng Hà Nội", Toast.LENGTH_SHORT).show();
+                String message = currentLanguage.equals(LANG_ENGLISH) ?
+                        "Location permission denied, using Hanoi" :
+                        "Quyền truy cập vị trí bị từ chối, sử dụng Hà Nội";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
                 tvCity.setText("Hanoi");
                 fetchWeather("Hanoi");
             }
@@ -285,27 +338,34 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                 fetchWeatherByCoordinates(latitude, longitude);
             } else {
                 Log.d("MainActivity", "Location is null");
-                Toast.makeText(this, "Không thể lấy vị trí hiện tại, sử dụng Hà Nội", Toast.LENGTH_SHORT).show();
+                String message = currentLanguage.equals(LANG_ENGLISH) ?
+                        "Cannot get current location, using Hanoi" :
+                        "Không thể lấy vị trí hiện tại, sử dụng Hà Nội";
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
                 tvCity.setText("Hanoi");
                 fetchWeather("Hanoi");
             }
         }).addOnFailureListener(e -> {
             Log.e("MainActivity", "Failed to get location: " + e.getMessage());
-            Toast.makeText(this, "Lấy vị trí thất bại, sử dụng Hà Nội: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            String message = currentLanguage.equals(LANG_ENGLISH) ?
+                    "Failed to get location, using Hanoi: " + e.getMessage() :
+                    "Lấy vị trí thất bại, sử dụng Hà Nội: " + e.getMessage();
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             tvCity.setText("Hanoi");
             fetchWeather("Hanoi");
         });
     }
 
     private void fetchWeatherByCoordinates(double latitude, double longitude) {
-        // Kiểm tra kết nối mạng trước
         if (!isNetworkAvailable()) {
-            showLoading(); // Hiển thị loading khi không có mạng
-            Toast.makeText(this, "Không có kết nối mạng. Vui lòng kiểm tra lại!", Toast.LENGTH_LONG).show();
+            showLoading();
+            String message = currentLanguage.equals(LANG_ENGLISH) ?
+                    "No internet connection. Please check again!" :
+                    "Không có kết nối mạng. Vui lòng kiểm tra lại!";
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             return;
         }
 
-        // Hiển thị loading trước khi gọi API
         showLoading();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.weatherapi.com/v1/")
@@ -315,59 +375,46 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         WeatherApiService apiService = retrofit.create(WeatherApiService.class);
         String query = latitude + "," + longitude;
 
-        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", query, 1, "vi");
+        // Sử dụng ngôn ngữ hiện tại
+        String lang = currentLanguage.equals(LANG_ENGLISH) ? "en" : "vi";
+        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", query, 1, lang);
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-
                 if (response.isSuccessful() && response.body() != null) {
-                    hideLoading(); // Ẩn loading khi có response
-
+                    hideLoading();
                     WeatherResponse weather = response.body();
-                    tvCity.setText(weather.location.name);
-                    tvDate.setText("Hôm nay, " + weather.location.localtime);
-                    tvTemperature.setText(weather.current.temp_c + "°");
-                    tvWeatherStatus.setText(weather.current.condition.text);
-                    tvWind.setText(weather.current.wind_kph + " km/h");
-                    tvHumidity.setText(weather.current.humidity + "%");
-
-                    String iconUrl = "https:" + weather.current.condition.icon.replace("64x64", "128x128");
-                    Glide.with(MainActivity.this)
-                            .load(iconUrl)
-                            .into(ivWeatherIcon);
-
-                    // Cập nhật trạng thái yêu thích
-                    Set<String> favoriteCities = sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>());
-                    ivLove.setSelected(favoriteCities.contains(weather.location.name));
-
-                    // Sử dụng method từ BaseActivity
-                    updateBackground(weather.location.localtime);
-                    updateRainEffect(weather.current.condition.text);
-
+                    updateWeatherUI(weather);
                 } else {
-                    Toast.makeText(MainActivity.this, "Lấy dữ liệu thời tiết thất bại", Toast.LENGTH_SHORT).show();
+                    hideLoading();
+                    String message = currentLanguage.equals(LANG_ENGLISH) ?
+                            "Failed to get weather data" : "Lấy dữ liệu thời tiết thất bại";
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-
-                Toast.makeText(MainActivity.this, "Lấy dữ liệu thời tiết thất bại: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                t.printStackTrace();
+                hideLoading();
+                String message = currentLanguage.equals(LANG_ENGLISH) ?
+                        "Failed to get weather data: " + t.getMessage() :
+                        "Lấy dữ liệu thời tiết thất bại: " + t.getMessage();
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void fetchWeather(String city) {
-// Kiểm tra kết nối mạng trước
         if (!isNetworkAvailable()) {
-            showLoading(); // Hiển thị loading khi không có mạng
-            Toast.makeText(this, "Không có kết nối mạng. Vui lòng kiểm tra lại!", Toast.LENGTH_LONG).show();
+            showLoading();
+            String message = currentLanguage.equals(LANG_ENGLISH) ?
+                    "No internet connection. Please check again!" :
+                    "Không có kết nối mạng. Vui lòng kiểm tra lại!";
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             return;
         }
 
-        // Hiển thị loading trước khi gọi API
         showLoading();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.weatherapi.com/v1/")
@@ -375,49 +422,116 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                 .build();
 
         WeatherApiService apiService = retrofit.create(WeatherApiService.class);
-        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", city, 1, "vi");
+        String lang = currentLanguage.equals(LANG_ENGLISH) ? "en" : "vi";
+        Call<WeatherResponse> call = apiService.getForecast("da7aaf6a73cd4196a8121617251005", city, 1, lang);
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-
                 if (response.isSuccessful() && response.body() != null) {
-                    hideLoading(); // Ẩn loading khi có response
-
+                    hideLoading();
                     WeatherResponse weather = response.body();
-                    tvCity.setText(weather.location.name);
-                    tvDate.setText("Hôm nay, " + weather.location.localtime);
-                    tvTemperature.setText(weather.current.temp_c + "°");
-                    tvWeatherStatus.setText(weather.current.condition.text);
-                    tvWind.setText(weather.current.wind_kph + " km/h");
-                    tvHumidity.setText(weather.current.humidity + "%");
-
-                    String iconUrl = "https:" + weather.current.condition.icon.replace("64x64", "128x128");
-                    Glide.with(MainActivity.this)
-                            .load(iconUrl)
-                            .into(ivWeatherIcon);
-
-                    // Cập nhật trạng thái yêu thích
-                    Set<String> favoriteCities = sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>());
-                    ivLove.setSelected(favoriteCities.contains(weather.location.name));
-
-                    // Sử dụng method từ BaseActivity
-                    updateBackground(weather.location.localtime);
-                    updateRainEffect(weather.current.condition.text);
+                    updateWeatherUI(weather);
                 } else {
-                    Toast.makeText(MainActivity.this, "Lấy dữ liệu thời tiết thất bại", Toast.LENGTH_SHORT).show();
+                    hideLoading();
+                    String message = currentLanguage.equals(LANG_ENGLISH) ?
+                            "Failed to get weather data" : "Lấy dữ liệu thời tiết thất bại";
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-
-                Toast.makeText(MainActivity.this, "Lấy dữ liệu thời tiết thất bại: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                t.printStackTrace();
+                hideLoading();
+                String message = currentLanguage.equals(LANG_ENGLISH) ?
+                        "Failed to get weather data: " + t.getMessage() :
+                        "Lấy dữ liệu thời tiết thất bại: " + t.getMessage();
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
+    private void updateWeatherUI(WeatherResponse weather) {
+        tvCity.setText(weather.location.name);
 
+        // Format ngày theo ngôn ngữ
+        String dateText = currentLanguage.equals(LANG_ENGLISH) ?
+                "Today, " + weather.location.localtime :
+                "Hôm nay, " + weather.location.localtime;
+        tvDate.setText(dateText);
+
+        // Format nhiệt độ theo đơn vị
+        tvTemperature.setText(formatTemperature(weather.current.temp_c));
+        tvWeatherStatus.setText(weather.current.condition.text);
+
+        // Cập nhật label và giá trị cho Wind
+        String windLabel = currentLanguage.equals(LANG_ENGLISH) ? "Wind Speed:" : "Tốc độ gió";
+        tvWindLabel.setText(windLabel);
+        tvWind.setText(weather.current.wind_kph + " km/h");
+
+        // Cập nhật label và giá trị cho Humidity
+        String humidityLabel = currentLanguage.equals(LANG_ENGLISH) ? "Humidity:" : "Độ ẩm";
+        tvHumidityLabel.setText(humidityLabel);
+        tvHumidity.setText(weather.current.humidity + "%");
+
+        String iconUrl = "https:" + weather.current.condition.icon.replace("64x64", "128x128");
+        Glide.with(MainActivity.this)
+                .load(iconUrl)
+                .into(ivWeatherIcon);
+
+        // Cập nhật trạng thái yêu thích
+        Set<String> favoriteCities = sharedPreferences.getStringSet(KEY_FAVORITE_CITIES, new HashSet<>());
+        ivLove.setSelected(favoriteCities.contains(weather.location.name));
+
+        updateBackground(weather.location.localtime);
+        updateRainEffect(weather.current.condition.text);
+    }
+    private void updateLabels() {
+        // Cập nhật các label theo ngôn ngữ hiện tại
+        String windLabel = currentLanguage.equals(LANG_ENGLISH) ? "Wind Speed:" : "Tốc độ gió:";
+        String humidityLabel = currentLanguage.equals(LANG_ENGLISH) ? "Humidity:" : "Độ ẩm:";
+
+        if (tvWindLabel != null) {
+            tvWindLabel.setText(windLabel);
+        }
+        if (tvHumidityLabel != null) {
+            tvHumidityLabel.setText(humidityLabel);
+        }
+
+        // Slide text - Đảm bảo tìm được element
+        TextView tvSlide = findViewById(R.id.tvSlide);
+        if (tvSlide != null) {
+            String slideText = currentLanguage.equals(LANG_ENGLISH) ?
+                    "Swipe left for favorites ←" : "Vuốt trái để xem những nơi yêu thích ←";
+            tvSlide.setText(slideText);
+        }
+
+        // Forecast button - Đảm bảo tìm được element
+        Button btnForecast = findViewById(R.id.btnForecast);
+        if (btnForecast != null) {
+            String forecastText = currentLanguage.equals(LANG_ENGLISH) ?
+                    "Forecast Information" : "Thông tin dự báo";
+            btnForecast.setText(forecastText);
+        }
+
+        // My Location button - Đảm bảo tìm được element
+        Button btnMyLocation = findViewById(R.id.btnMyLocation);
+        if (btnMyLocation != null) {
+            String locationText = currentLanguage.equals(LANG_ENGLISH) ?
+                    "My Location" : "Vị trí của tôi";
+            btnMyLocation.setText(locationText);
+        }
+    }
+    public void refreshLanguage() {
+        initializeSettings();
+        updateLabels();
+
+        // Reload weather data với ngôn ngữ mới
+        String currentCity = tvCity.getText().toString();
+        if (currentCity != null && !currentCity.isEmpty() &&
+                (!currentCity.equals("--") && !currentCity.equals("Loading...") && !currentCity.equals("Đang tải..."))) {
+            fetchWeather(currentCity);
+        }
+    }
     private void updateRainEffect(String weatherCondition) {
         boolean isRaining = weatherCondition.toLowerCase().contains("mưa") ||
                 weatherCondition.toLowerCase().contains("rain");
@@ -440,8 +554,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         }
     }
 
-    // Xóa method updateBackground - đã có trong BaseActivity
-
     private void showNotificationPopup() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         View sheetView = LayoutInflater.from(this).inflate(R.layout.notification_popup, null);
@@ -449,32 +561,34 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
         // Lấy các thành phần trong layout
         ImageView ivClose = sheetView.findViewById(R.id.ivClosePopup);
+        TextView tvNotificationTitle = sheetView.findViewById(R.id.tvNotificationTitle); // Lấy từ popup
         TextView tvClothingSuggestion = sheetView.findViewById(R.id.tvClothingSuggestion);
         TextView tvHealthAdvice = sheetView.findViewById(R.id.tvHealthAdvice);
         TextView tvWeatherImpact = sheetView.findViewById(R.id.tvWeatherImpact);
 
+        // Cập nhật title theo ngôn ngữ
+        String notificationTitle = currentLanguage.equals(LANG_ENGLISH) ?
+                "Weather Notifications" : "Thông báo thời tiết";
+        tvNotificationTitle.setText(notificationTitle);
+
         try {
-            // Kiểm tra và lấy dữ liệu thời tiết hiện tại
             String tempText = tvTemperature.getText().toString();
             String weatherCondition = tvWeatherStatus.getText().toString();
             String humidityText = tvHumidity.getText().toString();
             String windText = tvWind.getText().toString();
 
-            // Kiểm tra xem có dữ liệu hợp lệ không
             if (tempText.equals("--°") || tempText.isEmpty() ||
-                    weatherCondition.equals("Đang tải...") || weatherCondition.isEmpty() ||
+                    weatherCondition.equals("Đang tải...") || weatherCondition.equals("Loading...") || weatherCondition.isEmpty() ||
                     humidityText.equals("--%") || humidityText.isEmpty() ||
                     windText.equals("-- km/h") || windText.isEmpty()) {
 
-                // Hiển thị thông báo không có dữ liệu
                 showNoDataNotification(tvClothingSuggestion, tvHealthAdvice, tvWeatherImpact);
             } else {
-                // Parse dữ liệu với try-catch
-                double temperature = parseTemperature(tempText);
+                // Parse temperature considering current unit
+                double temperature = parseTemperatureWithUnit(tempText);
                 int humidity = parseHumidity(humidityText);
                 double windSpeed = parseWindSpeed(windText);
 
-                // Tạo gợi ý dựa trên dữ liệu
                 String clothingSuggestion = getClothingSuggestion(temperature, weatherCondition, humidity);
                 tvClothingSuggestion.setText(fromHtml(clothingSuggestion));
 
@@ -486,13 +600,26 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
             }
         } catch (Exception e) {
             Log.e("MainActivity", "Error parsing weather data: " + e.getMessage());
-            // Hiển thị thông báo lỗi
             showErrorNotification(tvClothingSuggestion, tvHealthAdvice, tvWeatherImpact);
         }
 
         ivClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
         bottomSheetDialog.show();
         notificationBadge.setVisibility(View.GONE);
+    }
+    private double parseTemperatureWithUnit(String tempText) {
+        try {
+            String numericPart = tempText.replace("°F", "").replace("°C", "").replace("°", "");
+            double temp = Double.parseDouble(numericPart);
+
+            // Nếu đang hiển thị Fahrenheit, chuyển về Celsius để tính toán
+            if (currentTempUnit.equals(TEMP_FAHRENHEIT)) {
+                temp = (temp - 32) * 5.0 / 9.0;
+            }
+            return temp;
+        } catch (NumberFormatException e) {
+            return 25.0; // Giá trị mặc định
+        }
     }
     // Phương thức parse nhiệt độ an toàn
     private double parseTemperature(String tempText) {
@@ -520,18 +647,22 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
             return 10.0; // Giá trị mặc định
         }
     }
-
-
-
-
-
     // Hiển thị thông báo khi không có dữ liệu
     private void showNoDataNotification(TextView tvClothingSuggestion, TextView tvHealthAdvice, TextView tvWeatherImpact) {
-        String noDataMessage = "📡 <b>Không có dữ liệu thời tiết</b><br><br>" +
-                "Vui lòng kiểm tra kết nối mạng và thử lại để nhận được:<br>" +
-                "• Gợi ý trang phục phù hợp<br>" +
-                "• Lời khuyên sức khỏe<br>" +
-                "• Dự báo tác động thời tiết";
+        String noDataMessage;
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            noDataMessage = "📡 <b>No weather data available</b><br><br>" +
+                    "Please check your internet connection and try again to get:<br>" +
+                    "• Clothing suggestions<br>" +
+                    "• Health advice<br>" +
+                    "• Weather impact forecast";
+        } else {
+            noDataMessage = "📡 <b>Không có dữ liệu thời tiết</b><br><br>" +
+                    "Vui lòng kiểm tra kết nối mạng và thử lại để nhận được:<br>" +
+                    "• Gợi ý trang phục phù hợp<br>" +
+                    "• Lời khuyên sức khỏe<br>" +
+                    "• Dự báo tác động thời tiết";
+        }
 
         tvClothingSuggestion.setText(fromHtml(noDataMessage));
         tvHealthAdvice.setText(fromHtml(""));
@@ -540,9 +671,16 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
     // Hiển thị thông báo lỗi
     private void showErrorNotification(TextView tvClothingSuggestion, TextView tvHealthAdvice, TextView tvWeatherImpact) {
-        String errorMessage = "⚠️ <b>Lỗi xử lý dữ liệu</b><br><br>" +
-                "Đã xảy ra lỗi khi xử lý thông tin thời tiết.<br>" +
-                "Vui lòng thử lại sau.";
+        String errorMessage;
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            errorMessage = "⚠️ <b>Data processing error</b><br><br>" +
+                    "An error occurred while processing weather information.<br>" +
+                    "Please try again later.";
+        } else {
+            errorMessage = "⚠️ <b>Lỗi xử lý dữ liệu</b><br><br>" +
+                    "Đã xảy ra lỗi khi xử lý thông tin thời tiết.<br>" +
+                    "Vui lòng thử lại sau.";
+        }
 
         tvClothingSuggestion.setText(fromHtml(errorMessage));
         tvHealthAdvice.setText(fromHtml(""));
@@ -560,123 +698,239 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
     }
 
     private String getClothingSuggestion(double temperature, String weatherCondition, int humidity) {
-        StringBuilder suggestion = new StringBuilder("📝 <b>Gợi ý trang phục:</b><br>");
+        StringBuilder suggestion = new StringBuilder();
 
-        // Gợi ý trang phục dựa trên nhiệt độ
-        if (temperature >= 30) {
-            suggestion.append("• Áo thun cotton nhẹ, thoáng khí<br>");
-            suggestion.append("• Quần short/váy nhẹ<br>");
-            suggestion.append("• Mũ rộng vành để che nắng");
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            suggestion.append("📝 <b>Clothing suggestions:</b><br>");
 
-            if (humidity > 70) {
-                suggestion.append("• Chọn vải cotton thoáng khí vì độ ẩm cao");
+            // Temperature-based suggestions
+            if (temperature >= 30) {
+                suggestion.append("• Light cotton t-shirt, breathable<br>");
+                suggestion.append("• Shorts/light skirt<br>");
+                suggestion.append("• Wide-brimmed hat for sun protection");
+
+                if (humidity > 70) {
+                    suggestion.append("<br>• Choose breathable cotton fabric due to high humidity");
+                }
+            } else if (temperature >= 20) {
+                suggestion.append("• Shirt or light t-shirt<br>");
+                suggestion.append("• Long pants/long skirt");
+            } else if (temperature >= 10) {
+                suggestion.append("• Light jacket or cardigan<br>");
+                suggestion.append("• Long pants<br>");
+                suggestion.append("• Light scarf");
+            } else {
+                suggestion.append("• Thick jacket, layered clothing<br>");
+                suggestion.append("• Wool hat, gloves, scarf<br>");
+                suggestion.append("• Boots");
             }
-        } else if (temperature >= 20) {
-            suggestion.append("• Áo sơ mi hoặc áo thun nhẹ<br>");
-            suggestion.append("• Quần dài/váy dài mỏng");
-        } else if (temperature >= 10) {
-            suggestion.append("• Áo khoác nhẹ hoặc cardigan<br>");
-            suggestion.append("• Quần dài<br>");
-            suggestion.append("• Khăn quàng cổ mỏng");
-        } else {
-            suggestion.append("• Áo khoác dày, đa lớp<br>");
-            suggestion.append("• Mũ len, găng tay, khăn quàng cổ<br>");
-            suggestion.append("• Giày bốt");
-        }
 
-        // Bổ sung dựa trên điều kiện thời tiết
-        if (weatherCondition.toLowerCase().contains("mưa") ||
-                weatherCondition.toLowerCase().contains("rain")) {
-            suggestion.append("• Mang theo ô/áo mưa<br>");
-            suggestion.append("• Giày không thấm nước");
-        } else if (weatherCondition.toLowerCase().contains("nắng") ||
-                weatherCondition.toLowerCase().contains("sunny")) {
-            suggestion.append("• Kính râm chống tia UV<br>");
-            suggestion.append("• Kem chống nắng SPF 50+");
+            // Weather condition additions
+            if (weatherCondition.toLowerCase().contains("rain")) {
+                suggestion.append("<br>• Bring umbrella/raincoat<br>");
+                suggestion.append("• Waterproof shoes");
+            } else if (weatherCondition.toLowerCase().contains("sunny")) {
+                suggestion.append("<br>• UV protection sunglasses<br>");
+                suggestion.append("• SPF 50+ sunscreen");
+            }
+        } else {
+            suggestion.append("📝 <b>Gợi ý trang phục:</b><br>");
+
+            // Gợi ý trang phục dựa trên nhiệt độ
+            if (temperature >= 30) {
+                suggestion.append("• Áo thun cotton nhẹ, thoáng khí<br>");
+                suggestion.append("• Quần short/váy nhẹ<br>");
+                suggestion.append("• Mũ rộng vành để che nắng");
+
+                if (humidity > 70) {
+                    suggestion.append("<br>• Chọn vải cotton thoáng khí vì độ ẩm cao");
+                }
+            } else if (temperature >= 20) {
+                suggestion.append("• Áo sơ mi hoặc áo thun nhẹ<br>");
+                suggestion.append("• Quần dài/váy dài mỏng");
+            } else if (temperature >= 10) {
+                suggestion.append("• Áo khoác nhẹ hoặc cardigan<br>");
+                suggestion.append("• Quần dài<br>");
+                suggestion.append("• Khăn quàng cổ mỏng");
+            } else {
+                suggestion.append("• Áo khoác dày, đa lớp<br>");
+                suggestion.append("• Mũ len, găng tay, khăn quàng cổ<br>");
+                suggestion.append("• Giày bốt");
+            }
+
+            // Bổ sung dựa trên điều kiện thời tiết
+            if (weatherCondition.toLowerCase().contains("mưa") ||
+                    weatherCondition.toLowerCase().contains("rain")) {
+                suggestion.append("<br>• Mang theo ô/áo mưa<br>");
+                suggestion.append("• Giày không thấm nước");
+            } else if (weatherCondition.toLowerCase().contains("nắng") ||
+                    weatherCondition.toLowerCase().contains("sunny")) {
+                suggestion.append("<br>• Kính râm chống tia UV<br>");
+                suggestion.append("• Kem chống nắng SPF 50+");
+            }
         }
 
         return suggestion.toString();
     }
 
     private String getHealthAdvice(double temperature, int humidity, String weatherCondition) {
-        StringBuilder advice = new StringBuilder("❤️ <b>Lời khuyên sức khỏe:</b><br>");
+        StringBuilder advice = new StringBuilder();
 
-        // Chỉ số nhiệt (Heat Index) đơn giản
-        double heatIndex = temperature;
-        if (temperature > 27 && humidity > 40) {
-            // Công thức đơn giản cho heat index
-            heatIndex = temperature + 0.05 * humidity;
-        }
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            advice.append("❤️ <b>Health advice:</b><br>");
 
-        // Cảnh báo dựa trên chỉ số nhiệt
-        if (heatIndex > 40) {
-            advice.append("• <b>CẢNH BÁO:</b> Nhiệt độ cực cao, tránh hoạt động ngoài trời!<br>");
-            advice.append("• Nguy cơ say nắng, sốc nhiệt cao<br>");
-            advice.append("• Uống nhiều nước (3-4 lít/ngày)");
-        } else if (heatIndex > 35) {
-            advice.append("• Hạn chế hoạt động ngoài trời từ 11h-15h<br>");
-            advice.append("• Uống ít nhất 2-3 lít nước/ngày<br>");
-            advice.append("• Nghỉ ngơi thường xuyên trong bóng râm");
-        } else if (heatIndex > 30) {
-            advice.append("• Uống đủ nước (2 lít/ngày)<br>");
-            advice.append("• Bôi kem chống nắng khi ra ngoài");
-        } else if (temperature < 10) {
-            advice.append("• Giữ ấm cơ thể, đặc biệt là đầu và bàn chân<br>");
-            advice.append("• Tránh thay đổi nhiệt độ đột ngột");
-        }
+            // Heat Index calculation
+            double heatIndex = temperature;
+            if (temperature > 27 && humidity > 40) {
+                heatIndex = temperature + 0.05 * humidity;
+            }
 
-        // Lời khuyên dựa trên điều kiện thời tiết
-        if (weatherCondition.toLowerCase().contains("mưa") ||
-                weatherCondition.toLowerCase().contains("rain")) {
-            advice.append("• Cẩn thận đường trơn trượt<br>");
-            advice.append("• Tránh để cơ thể bị ướt kéo dài");
-        }
+            // Heat-based warnings
+            if (heatIndex > 40) {
+                advice.append("• <b>WARNING:</b> Extreme heat, avoid outdoor activities!<br>");
+                advice.append("• High risk of heat stroke<br>");
+                advice.append("• Drink plenty of water (3-4 liters/day)");
+            } else if (heatIndex > 35) {
+                advice.append("• Limit outdoor activities from 11am-3pm<br>");
+                advice.append("• Drink at least 2-3 liters of water/day<br>");
+                advice.append("• Rest frequently in shade");
+            } else if (heatIndex > 30) {
+                advice.append("• Drink enough water (2 liters/day)<br>");
+                advice.append("• Apply sunscreen when going outside");
+            } else if (temperature < 10) {
+                advice.append("• Keep body warm, especially head and feet<br>");
+                advice.append("• Avoid sudden temperature changes");
+            }
 
-        // Thêm lời khuyên về dị ứng nếu trời nhiều gió và độ ẩm cao
-        if (humidity > 70) {
-            advice.append("• Người bị dị ứng phấn hoa cần đề phòng do độ ẩm cao");
+            // Weather-based advice
+            if (weatherCondition.toLowerCase().contains("rain")) {
+                advice.append("<br>• Be careful of slippery roads<br>");
+                advice.append("• Avoid prolonged exposure to wet conditions");
+            }
+
+            // Allergy advice
+            if (humidity > 70) {
+                advice.append("<br>• People with pollen allergies should be cautious due to high humidity");
+            }
+        } else {
+            advice.append("❤️ <b>Lời khuyên sức khỏe:</b><br>");
+
+            // Chỉ số nhiệt (Heat Index) đơn giản
+            double heatIndex = temperature;
+            if (temperature > 27 && humidity > 40) {
+                heatIndex = temperature + 0.05 * humidity;
+            }
+
+            // Cảnh báo dựa trên chỉ số nhiệt
+            if (heatIndex > 40) {
+                advice.append("• <b>CẢNH BÁO:</b> Nhiệt độ cực cao, tránh hoạt động ngoài trời!<br>");
+                advice.append("• Nguy cơ say nắng, sốc nhiệt cao<br>");
+                advice.append("• Uống nhiều nước (3-4 lít/ngày)");
+            } else if (heatIndex > 35) {
+                advice.append("• Hạn chế hoạt động ngoài trời từ 11h-15h<br>");
+                advice.append("• Uống ít nhất 2-3 lít nước/ngày<br>");
+                advice.append("• Nghỉ ngơi thường xuyên trong bóng râm");
+            } else if (heatIndex > 30) {
+                advice.append("• Uống đủ nước (2 lít/ngày)<br>");
+                advice.append("• Bôi kem chống nắng khi ra ngoài");
+            } else if (temperature < 10) {
+                advice.append("• Giữ ấm cơ thể, đặc biệt là đầu và bàn chân<br>");
+                advice.append("• Tránh thay đổi nhiệt độ đột ngột");
+            }
+
+            // Lời khuyên dựa trên điều kiện thời tiết
+            if (weatherCondition.toLowerCase().contains("mưa") ||
+                    weatherCondition.toLowerCase().contains("rain")) {
+                advice.append("<br>• Cẩn thận đường trơn trượt<br>");
+                advice.append("• Tránh để cơ thể bị ướt kéo dài");
+            }
+
+            // Thêm lời khuyên về dị ứng nếu trời nhiều gió và độ ẩm cao
+            if (humidity > 70) {
+                advice.append("<br>• Người bị dị ứng phấn hoa cần đề phòng do độ ẩm cao");
+            }
         }
 
         return advice.toString();
     }
 
     private String getWeatherImpact(double temperature, String weatherCondition, double windSpeed, int humidity) {
-        StringBuilder impact = new StringBuilder("🔍 <b>Dự báo tác động:</b><br>");
+        StringBuilder impact = new StringBuilder();
 
-        // Đánh giá tác động đến giao thông
-        impact.append("• <b>Giao thông:</b> ");
-        if (weatherCondition.toLowerCase().contains("mưa") ||
-                weatherCondition.toLowerCase().contains("rain")) {
-            impact.append("Cẩn thận đường trơn, tầm nhìn giảm");
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            impact.append("🔍 <b>Weather impact forecast:</b><br>");
 
-            if (weatherCondition.toLowerCase().contains("to") ||
-                    weatherCondition.toLowerCase().contains("heavy")) {
-                impact.append(", có thể ngập úng cục bộ");
+            // Traffic impact assessment
+            impact.append("• <b>Traffic:</b> ");
+            if (weatherCondition.toLowerCase().contains("rain")) {
+                impact.append("Be careful of slippery roads, reduced visibility");
+
+                if (weatherCondition.toLowerCase().contains("heavy")) {
+                    impact.append(", possible local flooding");
+                }
+            } else if (windSpeed > 20) {
+                impact.append("Strong winds, drive carefully");
+            } else {
+                impact.append("Normal conditions, smooth travel");
             }
-        } else if (windSpeed > 20) {
-            impact.append("Gió mạnh, lái xe cẩn thận");
+            impact.append("<br>");
+
+            // Outdoor activities assessment
+            impact.append("• <b>Outdoor activities:</b><br>");
+
+            // Activity scoring
+            int exerciseScore = getActivityScore(temperature, humidity, weatherCondition, "exercise");
+            int picnicScore = getActivityScore(temperature, humidity, weatherCondition, "picnic");
+            int swimmingScore = getActivityScore(temperature, humidity, weatherCondition, "swimming");
+
+            impact.append("  - Exercise: " + getScoreEmojiEnglish(exerciseScore) + "<br>");
+            impact.append("  - Picnic: " + getScoreEmojiEnglish(picnicScore) + "<br>");
+            impact.append("  - Swimming: " + getScoreEmojiEnglish(swimmingScore));
+
+            // Best time for activities
+            if (temperature > 30) {
+                impact.append("<br>• <b>Best time for activities:</b> Early morning or after 5pm");
+            } else if (temperature < 10) {
+                impact.append("<br>• <b>Best time for activities:</b> 10am-3pm when temperature is highest");
+            }
         } else {
-            impact.append("Bình thường, đi lại thuận lợi");
-        }
-        impact.append("<br>");
+            impact.append("🔍 <b>Dự báo tác động:</b><br>");
 
-        // Đánh giá tác động đến hoạt động ngoài trời
-        impact.append("• <b>Hoạt động ngoài trời:</b><br>");
+            // Đánh giá tác động đến giao thông
+            impact.append("• <b>Giao thông:</b> ");
+            if (weatherCondition.toLowerCase().contains("mưa") ||
+                    weatherCondition.toLowerCase().contains("rain")) {
+                impact.append("Cẩn thận đường trơn, tầm nhìn giảm");
 
-        // Chấm điểm các hoạt động
-        int exerciseScore = getActivityScore(temperature, humidity, weatherCondition, "exercise");
-        int picnicScore = getActivityScore(temperature, humidity, weatherCondition, "picnic");
-        int swimmingScore = getActivityScore(temperature, humidity, weatherCondition, "swimming");
+                if (weatherCondition.toLowerCase().contains("to") ||
+                        weatherCondition.toLowerCase().contains("heavy")) {
+                    impact.append(", có thể ngập úng cục bộ");
+                }
+            } else if (windSpeed > 20) {
+                impact.append("Gió mạnh, lái xe cẩn thận");
+            } else {
+                impact.append("Bình thường, đi lại thuận lợi");
+            }
+            impact.append("<br>");
 
-        impact.append("  - Tập thể dục: " + getScoreEmoji(exerciseScore) + "<br>");
-        impact.append("  - Dã ngoại: " + getScoreEmoji(picnicScore) + "<br>");
-        impact.append("  - Bơi lội: " + getScoreEmoji(swimmingScore));
+            // Đánh giá tác động đến hoạt động ngoài trời
+            impact.append("• <b>Hoạt động ngoài trời:</b><br>");
 
-        // Thời gian tốt nhất cho hoạt động
-        if (temperature > 30) {
-            impact.append("• <b>Thời điểm tốt nhất để hoạt động:</b> Sáng sớm hoặc sau 17h");
-        } else if (temperature < 10) {
-            impact.append("• <b>Thời điểm tốt nhất để hoạt động:</b> 10h-15h khi nhiệt độ cao nhất");
+            // Chấm điểm các hoạt động
+            int exerciseScore = getActivityScore(temperature, humidity, weatherCondition, "exercise");
+            int picnicScore = getActivityScore(temperature, humidity, weatherCondition, "picnic");
+            int swimmingScore = getActivityScore(temperature, humidity, weatherCondition, "swimming");
+
+            impact.append("  - Tập thể dục: " + getScoreEmoji(exerciseScore) + "<br>");
+            impact.append("  - Dã ngoại: " + getScoreEmoji(picnicScore) + "<br>");
+            impact.append("  - Bơi lội: " + getScoreEmoji(swimmingScore));
+
+            // Thời gian tốt nhất cho hoạt động
+            if (temperature > 30) {
+                impact.append("<br>• <b>Thời điểm tốt nhất để hoạt động:</b> Sáng sớm hoặc sau 17h");
+            } else if (temperature < 10) {
+                impact.append("<br>• <b>Thời điểm tốt nhất để hoạt động:</b> 10h-15h khi nhiệt độ cao nhất");
+            }
         }
 
         return impact.toString();
@@ -726,6 +980,12 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         else if (score >= 4) return "Trung bình ("+score+"/10) 😐";
         else return "Không phù hợp ("+score+"/10) 👎";
     }
+    private String getScoreEmojiEnglish(int score) {
+        if (score >= 8) return "Excellent ("+score+"/10) 👍";
+        else if (score >= 6) return "Good ("+score+"/10) 👌";
+        else if (score >= 4) return "Average ("+score+"/10) 😐";
+        else return "Not suitable ("+score+"/10) 👎";
+    }
 
     private void openLocationPicker() {
         Intent intent = new Intent(MainActivity.this, LocationPickerActivity.class);
@@ -743,6 +1003,33 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Luôn reload settings khi quay lại activity
+        String oldLanguage = currentLanguage;
+        String oldTempUnit = currentTempUnit;
+
+        // Reload settings từ SharedPreferences
+        initializeSettings();
+
+        // Kiểm tra xem có thay đổi không
+        boolean languageChanged = !oldLanguage.equals(currentLanguage);
+        boolean tempUnitChanged = !oldTempUnit.equals(currentTempUnit);
+
+        if (languageChanged || tempUnitChanged) {
+            // Cập nhật labels ngay lập tức
+            updateLabels();
+
+            // Reload dữ liệu thời tiết với settings mới nếu cần
+            String currentCity = tvCity.getText().toString();
+            if (currentCity != null && !currentCity.isEmpty() &&
+                    (!currentCity.equals("--") && !currentCity.equals("Loading...") && !currentCity.equals("Đang tải..."))) {
+                fetchWeather(currentCity);
+            }
+        } else {
+            // Vẫn cập nhật labels để đảm bảo UI nhất quán
+            updateLabels();
+        }
+
         if (rainContainer.getVisibility() == View.VISIBLE) {
             rainView.startRain();
         }
