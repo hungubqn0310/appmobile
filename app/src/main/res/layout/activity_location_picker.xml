@@ -62,12 +62,13 @@
 
         <!-- Recent search -->
         <TextView
+            android:id="@+id/tvRecentSearches"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="Tìm kiếm gần đây"
             android:textColor="#888888"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:textStyle="bold" />
 
         <!-- Recent search container (sẽ được populate từ Java) -->
         <LinearLayout

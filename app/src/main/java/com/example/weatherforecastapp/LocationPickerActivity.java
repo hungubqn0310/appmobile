@@ -26,19 +26,37 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public class LocationPickerActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
 
+    // Language settings
+    private static final String SETTINGS_PREFS = "SettingsPrefs";
+    private static final String KEY_LANGUAGE = "language";
+    private static final String KEY_TEMPERATURE_UNIT = "temperature_unit";
+    private static final String LANG_VIETNAMESE = "vi";
+    private static final String LANG_ENGLISH = "en";
+
+    private String currentLanguage = LANG_VIETNAMESE;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_picker);
+
+        // Initialize language setting
+        SharedPreferences settingsPrefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
+        currentLanguage = settingsPrefs.getString(KEY_LANGUAGE, LANG_VIETNAMESE);
+
+        // Update UI with localized strings
+        updateLabels();
 
         // Nạp bản đồ
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -46,7 +64,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         } else {
-            Toast.makeText(this, "Không thể tải bản đồ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getLocalizedString("MAP_LOAD_ERROR"), Toast.LENGTH_SHORT).show();
         }
 
         // Nút quay lại
@@ -55,6 +73,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
         // Xử lý nhập tên thành phố
         EditText etSearch = findViewById(R.id.etSearch);
+        etSearch.setHint(getLocalizedString("SEARCH_HINT"));
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
                 String city = etSearch.getText().toString().trim();
@@ -65,7 +84,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(this, "Vui lòng nhập tên thành phố", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getLocalizedString("ENTER_CITY_NAME"), Toast.LENGTH_SHORT).show();
                 }
                 return true;
             }
@@ -74,6 +93,50 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
         // ✅ Hiển thị recent search khi mở activity
         showRecentSearches();
+
+
+    }
+
+    private void updateLabels() {
+        // Update any additional labels here
+        TextView tvRecentSearches = findViewById(R.id.tvRecentSearches);
+        if (tvRecentSearches != null) {
+            tvRecentSearches.setText(getLocalizedString("RECENT_SEARCHES"));
+        }
+    }
+
+    // Language localization
+    private static final class LanguageStrings {
+        // Vietnamese strings
+        private static final Map<String, String> VI = new HashMap<String, String>() {{
+            put("CHOOSE_LOCATION", "Chọn địa điểm");
+            put("RECENT_SEARCHES", "Tìm kiếm gần đây");
+            put("MAP_LOAD_ERROR", "Không thể tải bản đồ");
+            put("ENTER_CITY_NAME", "Vui lòng nhập tên thành phố");
+            put("LOCATION_SELECTED", "Đã chọn");
+            put("COORDINATES_SELECTED", "Đã chọn tọa độ");
+            put("ADDRESS_ERROR", "Lỗi khi lấy địa chỉ");
+            put("SEARCH_HINT", "Nhập tên thành phố...");
+        }};
+
+        // English strings
+        private static final Map<String, String> EN = new HashMap<String, String>() {{
+            put("CHOOSE_LOCATION", "Choose Location");
+            put("RECENT_SEARCHES", "Recent Searches");
+            put("MAP_LOAD_ERROR", "Unable to load map");
+            put("ENTER_CITY_NAME", "Please enter a city name");
+            put("LOCATION_SELECTED", "Selected");
+            put("COORDINATES_SELECTED", "Selected coordinates");
+            put("ADDRESS_ERROR", "Error fetching address");
+            put("SEARCH_HINT", "Enter city name...");
+        }};
+    }
+
+    private String getLocalizedString(String key) {
+        Map<String, String> strings = currentLanguage.equals(LANG_VIETNAMESE) ?
+                LanguageStrings.VI : LanguageStrings.EN;
+        String value = strings.get(key);
+        return value != null ? value : key;
     }
 
     @Override
@@ -86,7 +149,7 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
         mMap.setOnMapClickListener(latLng -> {
             mMap.clear();
-            mMap.addMarker(new MarkerOptions().position(latLng).title("Vị trí đã chọn"));
+            mMap.addMarker(new MarkerOptions().position(latLng).title(getLocalizedString("LOCATION_SELECTED")));
 
             Geocoder geocoder = new Geocoder(LocationPickerActivity.this, Locale.getDefault());
             try {
@@ -102,9 +165,9 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
                 String latlon = latLng.latitude + "," + latLng.longitude;
 
                 if (cityName != null && !cityName.isEmpty()) {
-                    Toast.makeText(this, "Đã chọn: " + cityName, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getLocalizedString("LOCATION_SELECTED") + ": " + cityName, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "Đã chọn tọa độ: " + latlon, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getLocalizedString("COORDINATES_SELECTED") + ": " + latlon, Toast.LENGTH_SHORT).show();
                 }
 
                 saveRecentSearch(cityName != null ? cityName : latlon); // ✅ lưu recent theo tên nếu có
@@ -116,10 +179,9 @@ public class LocationPickerActivity extends AppCompatActivity implements OnMapRe
 
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(this, "Lỗi khi lấy địa chỉ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getLocalizedString("ADDRESS_ERROR"), Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     private void saveRecentSearch(String cityName) {
