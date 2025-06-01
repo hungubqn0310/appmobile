@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import java.util.Calendar;
 
@@ -13,6 +14,9 @@ public class SunArcView extends View {
     private Paint sunPaint;
     private Paint grayArcPaint;
     private Paint textPaint;
+    // Thêm biến để lưu thời gian hiện tại
+    private int currentHour = 0;
+    private int currentMinute = 0;
     private RectF arcRect;
 
     // Thời gian bình minh và hoàng hôn (theo phút từ 00:00) - sẽ được cập nhật từ API
@@ -36,7 +40,40 @@ public class SunArcView extends View {
         super(context, attrs, defStyleAttr);
         init();
     }
+    // Thêm phương thức để set thời gian hiện tại từ API
+    public void setCurrentTime(String timeString) {
+        try {
+            String[] timeParts = timeString.split(":");
+            this.currentHour = Integer.parseInt(timeParts[0]);
+            this.currentMinute = Integer.parseInt(timeParts[1]);
 
+            // Cập nhật vị trí mặt trời với thời gian mới
+            updateSunPositionWithTime(currentHour, currentMinute);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // Thêm phương thức mới để cập nhật vị trí với thời gian cụ thể
+    private void updateSunPositionWithTime(int hour, int minute) {
+        int currentTimeInMinutes = hour * 60 + minute;
+
+        // Cập nhật text thời gian hiện tại
+        currentTimeText = String.format("%02d:%02d", hour, minute);
+
+        // Tính toán vị trí mặt trời
+        if (currentTimeInMinutes < sunriseTime) {
+            sunPosition = 0f;
+        } else if (currentTimeInMinutes > sunsetTime) {
+            sunPosition = 1f;
+        } else {
+            int dayDuration = sunsetTime - sunriseTime;
+            int timeFromSunrise = currentTimeInMinutes - sunriseTime;
+            sunPosition = (float) timeFromSunrise / dayDuration;
+        }
+
+        sunPosition = Math.max(0f, Math.min(1f, sunPosition));
+        invalidate();
+    }
     private void init() {
         // Paint cho đường cung màu vàng
         arcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -61,7 +98,15 @@ public class SunArcView extends View {
         // Paint cho text thời gian hiện tại
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(0xFFFFFFFF);
-        textPaint.setTextSize(16f);
+
+        // Thiết lập kích thước chữ theo đơn vị sp, ví dụ 18sp
+        float textSizeSp = 16f;
+        float textSizePx = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                textSizeSp,
+                getResources().getDisplayMetrics()
+        );
+        textPaint.setTextSize(textSizePx);
         textPaint.setTextAlign(Paint.Align.CENTER);
 
         arcRect = new RectF();
@@ -137,32 +182,14 @@ public class SunArcView extends View {
 
     // Cập nhật vị trí mặt trời dựa trên thời gian hiện tại
     public void updateSunPosition() {
-        Calendar calendar = Calendar.getInstance();
-        int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
-        int currentMinute = calendar.get(Calendar.MINUTE);
-        int currentTimeInMinutes = currentHour * 60 + currentMinute;
-
-        // Cập nhật text thời gian hiện tại
-        currentTimeText = String.format("%02d:%02d", currentHour, currentMinute);
-
-        // Tính toán vị trí mặt trời
-        if (currentTimeInMinutes < sunriseTime) {
-            // Trước bình minh - mặt trời ở dưới đường chân trời
-            sunPosition = 0f;
-        } else if (currentTimeInMinutes > sunsetTime) {
-            // Sau hoàng hôn - mặt trời ở dưới đường chân trời
-            sunPosition = 1f;
-        } else {
-            // Trong khoảng thời gian từ bình minh đến hoàng hôn
-            int dayDuration = sunsetTime - sunriseTime;
-            int timeFromSunrise = currentTimeInMinutes - sunriseTime;
-            sunPosition = (float) timeFromSunrise / dayDuration;
+        // Nếu chưa có thời gian từ API, sử dụng thời gian hệ thống
+        if (currentHour == 0 && currentMinute == 0) {
+            Calendar calendar = Calendar.getInstance();
+            currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+            currentMinute = calendar.get(Calendar.MINUTE);
         }
 
-        // Đảm bảo giá trị trong khoảng [0, 1]
-        sunPosition = Math.max(0f, Math.min(1f, sunPosition));
-
-        invalidate(); // Vẽ lại view
+        updateSunPositionWithTime(currentHour, currentMinute);
     }
 
     // Đặt thời gian bình minh và hoàng hôn

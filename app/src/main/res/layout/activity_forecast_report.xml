@@ -1152,8 +1152,8 @@
 
                 <!-- Hình mặt trăng ở giữa -->
                 <ImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:src="@drawable/ic_moon_phase"
                     android:layout_gravity="center" />
 
@@ -1190,6 +1190,7 @@
 
             <!-- Tên pha mặt trăng -->
             <TextView
+                android:id="@+id/tvMoonPhase"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -1349,9 +1350,62 @@
                     android:text="--°"
                     android:textColor="#000000"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                     />
 
             </LinearLayout>
+            <!-- Thẻ Tầm nhìn -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_margin="8dp"
+                android:background="@drawable/info_box_bg"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_visibility"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/label_visibility"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.8"
+                        android:text="TẦM NHÌN"
+                        android:textColor="#000000"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvTamNhin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="data"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                     />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <!-- Hàng 3: Tầm nhìn và Áp suất -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <!-- Thẻ Độ ẩm -->
             <LinearLayout
@@ -1393,63 +1447,10 @@
                     android:layout_marginTop="8dp"
                     android:text="--%"
                     android:textColor="#000000"
-                    android:textSize="36sp"
-                    android:textStyle="bold" />
+                    android:textSize="20sp"
+                     />
 
             </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- Hàng 3: Tầm nhìn và Áp suất -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-        <!-- Thẻ Tầm nhìn -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_margin="8dp"
-            android:background="@drawable/info_box_bg"
-            android:padding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_visibility"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:id="@+id/label_visibility"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:alpha="0.8"
-                    android:text="TẦM NHÌN"
-                    android:textColor="#000000"
-                    android:textSize="12sp" />
-
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvTamNhin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="data"
-                android:textColor="#000000"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
 
             <!-- Thẻ Lượng mưa -->
             <LinearLayout
@@ -1497,8 +1498,8 @@
                         android:layout_height="wrap_content"
                         android:text="data"
                         android:textColor="#000000"
-                        android:textSize="28sp"
-                        android:textStyle="bold" />
+                        android:textSize="20sp"
+                       />
 
                 </LinearLayout>
 

@@ -107,7 +107,7 @@ public class ForecastReportActivity extends BaseActivity {
         tvHoangHon = findViewById(R.id.tvHoangHon);
         tvTrangMoc = findViewById(R.id.tvTrangMoc);
         tvTrangLan = findViewById(R.id.tvTrangLan);
-//        tvMoonPhase = findViewById(R.id.tvMoonPhase);
+        tvMoonPhase = findViewById(R.id.tvMoonPhase);
     }
     private static final class LanguageStrings {
         // Tiếng Việt
@@ -360,8 +360,11 @@ public class ForecastReportActivity extends BaseActivity {
 
             // Extract basic info
             JsonObject location = jsonObject.getAsJsonObject("location");
-            String currentDate = location.get("localtime").getAsString().split(" ")[0];
-            String currentHour = getCurrentHour(jsonObject);
+            String localtime = location.get("localtime").getAsString(); // "2025-01-15 14:30"
+            String[] dateTimeParts = localtime.split(" ");
+            String currentDate = dateTimeParts[0];
+            String currentTime = dateTimeParts[1]; // "14:30"
+            String currentHour = currentTime.split(":")[0] + ":00";
 
             // Extract current weather data
             JsonObject current = jsonObject.getAsJsonObject("current");
@@ -375,8 +378,8 @@ public class ForecastReportActivity extends BaseActivity {
             // Extract astro data
             AstroData astroData = extractAstroData(forecastDays);
 
-            // Update UI on main thread
-            updateUIOnMainThread(currentDate, currentHour, current, forecastData, astroData);
+            // Update UI on main thread - truyền thêm currentTime
+            updateUIOnMainThread(currentDate, currentHour, currentTime, current, forecastData, astroData);
 
         } catch (Exception e) {
             handleApiError("Lỗi khi xử lý dữ liệu JSON: " + e.getMessage(), "Lỗi khi xử lý dữ liệu thời tiết");
@@ -461,8 +464,8 @@ public class ForecastReportActivity extends BaseActivity {
         return null;
     }
 
-    private void updateUIOnMainThread(String currentDate, String currentHour, JsonObject current,
-                                      ForecastData forecastData, AstroData astroData) {
+    private void updateUIOnMainThread(String currentDate, String currentHour, String currentTime,
+                                      JsonObject current, ForecastData forecastData, AstroData astroData) {
         String formattedCurrentDate = formatCurrentDate(currentDate);
 
         runOnUiThread(() -> {
@@ -473,7 +476,7 @@ public class ForecastReportActivity extends BaseActivity {
             updateHourlyForecastUI(forecastData.hourlyForecasts, currentHour);
 
             if (astroData != null) {
-                updateAstroData(astroData);
+                updateAstroData(astroData, currentTime); // Truyền currentTime
             }
         });
     }
@@ -667,7 +670,7 @@ public class ForecastReportActivity extends BaseActivity {
             pressureGaugeView.showPlaceholder();
         }
     }
-    private void updateAstroData(AstroData astroData) {
+    private void updateAstroData(AstroData astroData, String currentTime) {
         try {
             String sunrise24h = convertTo24Hour(astroData.sunrise);
             String sunset24h = convertTo24Hour(astroData.sunset);
@@ -680,12 +683,19 @@ public class ForecastReportActivity extends BaseActivity {
             tvTrangLan.setText(moonset24h);
 
             if (sunArcView != null) {
+                // Set thời gian bình minh và hoàng hôn
                 sunArcView.setSunTimes(sunrise24h, sunset24h);
+
+                // Set thời gian hiện tại của địa điểm
+                if (currentTime != null && !currentTime.isEmpty()) {
+                    sunArcView.setCurrentTime(currentTime);
+                }
             }
 
+            // Hiển thị tên pha mặt trăng
             if (tvMoonPhase != null) {
-                String moonPhaseVietnamese = translateMoonPhase(astroData.moonPhase);
-                tvMoonPhase.setText(moonPhaseVietnamese);
+                String moonPhaseTranslated = translateMoonPhase(astroData.moonPhase);
+                tvMoonPhase.setText(moonPhaseTranslated);
             }
         } catch (Exception e) {
             Log.e(TAG, "Lỗi khi cập nhật dữ liệu thiên văn: " + e.getMessage());
@@ -921,16 +931,22 @@ public class ForecastReportActivity extends BaseActivity {
     }
 
     private String translateMoonPhase(String englishPhase) {
-        switch (englishPhase.toLowerCase()) {
-            case "new moon": return "Trăng mới";
-            case "waxing crescent": return "Trăng lưỡi liềm tăng";
-            case "first quarter": return "Trăng tròn một phần tư";
-            case "waxing gibbous": return "Trăng khuyết tăng";
-            case "full moon": return "Trăng tròn";
-            case "waning gibbous": return "Trăng khuyết giảm";
-            case "last quarter": return "Trăng tròn ba phần tư";
-            case "waning crescent": return "Trăng lưỡi liềm giảm";
-            default: return englishPhase;
+        if (currentLanguage.equals(LANG_ENGLISH)) {
+            // Trả về tên tiếng Anh với format đẹp hơn
+            return englishPhase.substring(0, 1).toUpperCase() + englishPhase.substring(1).toLowerCase();
+        } else {
+            // Dịch sang tiếng Việt
+            switch (englishPhase.toLowerCase()) {
+                case "new moon": return "Trăng mới";
+                case "waxing crescent": return "Trăng lưỡi liềm tăng";
+                case "first quarter": return "Trăng tròn một phần tư";
+                case "waxing gibbous": return "Trăng khuyết tăng";
+                case "full moon": return "Trăng tròn";
+                case "waning gibbous": return "Trăng khuyết giảm";
+                case "last quarter": return "Trăng tròn ba phần tư";
+                case "waning crescent": return "Trăng lưỡi liềm giảm";
+                default: return englishPhase;
+            }
         }
     }
 

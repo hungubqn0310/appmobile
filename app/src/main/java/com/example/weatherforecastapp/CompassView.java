@@ -70,7 +70,7 @@ public class CompassView extends View {
         float[] angles = {0, 90, 180, 270};
 
         textPaint.setTextSize(dpToPx(14));
-        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        textPaint.setTypeface(Typeface.DEFAULT);
 
         for (int i = 0; i < directions.length; i++) {
             float angle = (float) Math.toRadians(angles[i] - 90);
@@ -126,36 +126,16 @@ public class CompassView extends View {
         canvas.drawLine(centerX, centerY + textAreaRadius,
                 centerX, centerY + dpToPx(35), arrowPaint);
 
-        // Đuôi mũi tên - thiết kế đẹp hơn như lông vũ
-        arrowPaint.setStrokeWidth(dpToPx(2));
 
-        // Lông vũ bên trái
-        Path leftFeather = new Path();
-        leftFeather.moveTo(centerX - dpToPx(2), centerY + dpToPx(35));
-        leftFeather.lineTo(centerX - dpToPx(10), centerY + dpToPx(28));
-        leftFeather.lineTo(centerX - dpToPx(8), centerY + dpToPx(30));
-        leftFeather.lineTo(centerX - dpToPx(6), centerY + dpToPx(32));
-        leftFeather.lineTo(centerX - dpToPx(2), centerY + dpToPx(35));
 
-        arrowPaint.setStyle(Paint.Style.FILL);
-        canvas.drawPath(leftFeather, arrowPaint);
 
-        // Lông vũ bên phải
-        Path rightFeather = new Path();
-        rightFeather.moveTo(centerX + dpToPx(2), centerY + dpToPx(35));
-        rightFeather.lineTo(centerX + dpToPx(10), centerY + dpToPx(28));
-        rightFeather.lineTo(centerX + dpToPx(8), centerY + dpToPx(30));
-        rightFeather.lineTo(centerX + dpToPx(6), centerY + dpToPx(32));
-        rightFeather.lineTo(centerX + dpToPx(2), centerY + dpToPx(35));
-
-        canvas.drawPath(rightFeather, arrowPaint);
 
         canvas.restore();
     }
 
     private void drawWindSpeed(Canvas canvas) {
         textPaint.setTextSize(dpToPx(12));
-        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        textPaint.setTypeface(Typeface.DEFAULT);
         textPaint.setColor(Color.BLACK);
 
         String[] lines = windSpeed.split("\n");

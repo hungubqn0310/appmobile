@@ -387,7 +387,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                     WeatherResponse weather = response.body();
                     updateWeatherUI(weather);
                 } else {
-                    hideLoading();
                     String message = currentLanguage.equals(LANG_ENGLISH) ?
                             "Failed to get weather data" : "Lấy dữ liệu thời tiết thất bại";
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
@@ -396,7 +395,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                hideLoading();
                 String message = currentLanguage.equals(LANG_ENGLISH) ?
                         "Failed to get weather data: " + t.getMessage() :
                         "Lấy dữ liệu thời tiết thất bại: " + t.getMessage();
@@ -433,7 +431,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                     WeatherResponse weather = response.body();
                     updateWeatherUI(weather);
                 } else {
-                    hideLoading();
                     String message = currentLanguage.equals(LANG_ENGLISH) ?
                             "Failed to get weather data" : "Lấy dữ liệu thời tiết thất bại";
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
@@ -442,7 +439,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                hideLoading();
                 String message = currentLanguage.equals(LANG_ENGLISH) ?
                         "Failed to get weather data: " + t.getMessage() :
                         "Lấy dữ liệu thời tiết thất bại: " + t.getMessage();

@@ -37,7 +37,7 @@ public class PressureGaugeView extends View {
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(dpToPx(14));
         textPaint.setTextAlign(Paint.Align.CENTER);
-        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        textPaint.setTypeface(Typeface.DEFAULT);
 
         // Paint cho label (Thấp/Cao)
         labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
