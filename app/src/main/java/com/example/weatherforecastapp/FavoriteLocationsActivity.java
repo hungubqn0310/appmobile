@@ -117,7 +117,7 @@ public class FavoriteLocationsActivity extends BaseActivity {
             put("CONNECTION_ERROR", "Lỗi kết nối API");
             put("GO_TO_WEATHER", "Chuyển đến thời tiết tại");
             put("DEFAULT_LOCATION", "Không thể lấy vị trí hiện tại, sử dụng Hà Nội");
-            put("SLIDE_TO_RETURN", "Vuốt sang phải để quay lại");
+            put("SLIDE_TO_RETURN", "Trượt để về trang chủ →");
             put("NO_NETWORK", "Không có kết nối mạng");
             put("FAVORITE_LOCATIONS", "Địa điểm yêu thích");
         }};
@@ -133,7 +133,7 @@ public class FavoriteLocationsActivity extends BaseActivity {
             put("CONNECTION_ERROR", "API connection error");
             put("GO_TO_WEATHER", "Going to weather in");
             put("DEFAULT_LOCATION", "Unable to get current location, using Hanoi");
-            put("SLIDE_TO_RETURN", "Swipe right to return");
+            put("SLIDE_TO_RETURN", "Swipe right to return →");
             put("NO_NETWORK", "No network connection");
             put("FAVORITE_LOCATIONS", "Favorite Locations");
         }};

@@ -497,7 +497,7 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         TextView tvSlide = findViewById(R.id.tvSlide);
         if (tvSlide != null) {
             String slideText = currentLanguage.equals(LANG_ENGLISH) ?
-                    "Swipe left for favorites ←" : "Vuốt trái để xem những nơi yêu thích ←";
+                    "← Swipe left for favorites" : "← Trượt để sang địa điểm yêu thích";
             tvSlide.setText(slideText);
         }
 
