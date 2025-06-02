@@ -460,12 +460,12 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         tvWeatherStatus.setText(weather.current.condition.text);
 
         // Cập nhật label và giá trị cho Wind
-        String windLabel = currentLanguage.equals(LANG_ENGLISH) ? "Wind Speed:" : "Tốc độ gió";
+        String windLabel = currentLanguage.equals(LANG_ENGLISH) ? "Wind Speed |" : "Tốc độ gió |";
         tvWindLabel.setText(windLabel);
         tvWind.setText(weather.current.wind_kph + " km/h");
 
         // Cập nhật label và giá trị cho Humidity
-        String humidityLabel = currentLanguage.equals(LANG_ENGLISH) ? "Humidity:" : "Độ ẩm";
+        String humidityLabel = currentLanguage.equals(LANG_ENGLISH) ? "Humidity |" : "Độ ẩm |";
         tvHumidityLabel.setText(humidityLabel);
         tvHumidity.setText(weather.current.humidity + "%");
 
