@@ -157,10 +157,18 @@ public class SunArcView extends View {
         // Vẽ điểm mặt trời với hiệu ứng phát sáng
         canvas.drawCircle(sunX, sunY, 12f, sunPaint);
 
-        // Vẽ thời gian hiện tại phía trên mặt trời
+        // Vẽ thời gian hiện tại phía dưới mặt trời, nằm bên trong cung
         if (!currentTimeText.isEmpty()) {
-            canvas.drawText(currentTimeText, sunX, sunY - 25f, textPaint);
+            float textOffsetRadius = 90f; // khoảng cách từ mặt trời vào phía trong cung
+
+            // Tính vị trí cho text nằm bên trong cung
+            float textX = centerX + (radius - textOffsetRadius) * (float) Math.cos(angleInRadians);
+            float textY = centerY + (radius - textOffsetRadius) * (float) Math.sin(angleInRadians);
+
+            canvas.drawText(currentTimeText, textX, textY, textPaint);
         }
+
+
 
         // Vẽ nhãn bình minh và hoàng hôn
         float baseY = arcRect.bottom + 20f;
