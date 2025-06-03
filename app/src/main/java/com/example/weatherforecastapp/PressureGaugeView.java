@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -19,8 +20,18 @@ public class PressureGaugeView extends View {
     private float maxPressure = 1040f; // Áp suất tối đa
     private boolean showPlaceholder = true; // true = hiển thị "--", false = hiển thị giá trị thực
 
+    // Language settings
+    private static final String SETTINGS_PREFS = "SettingsPrefs";
+    private static final String KEY_LANGUAGE = "language";
+    private static final String LANG_VIETNAMESE = "vi";
+    private static final String LANG_ENGLISH = "en";
+    private String currentLanguage = LANG_VIETNAMESE;
+
     public PressureGaugeView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // Lấy cài đặt ngôn ngữ từ SharedPreferences
+        SharedPreferences prefs = context.getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE);
+        currentLanguage = prefs.getString(KEY_LANGUAGE, LANG_VIETNAMESE);
         init();
     }
 
@@ -169,14 +180,18 @@ public class PressureGaugeView extends View {
     }
 
     private void drawLabels(Canvas canvas) {
-        // Label "Thấp" và "Cao" ở dưới cùng
+        // Label "Thấp"/"Low" và "Cao"/"High" ở dưới cùng
         float bottomY = centerY + radius - dpToPx(5);
 
-        // Label "Thấp" bên trái
-        canvas.drawText("Thấp", centerX - dpToPx(30), bottomY, labelPaint);
+        // Chọn nhãn phù hợp với ngôn ngữ
+        String lowLabel = currentLanguage.equals(LANG_ENGLISH) ? "Low" : "Thấp";
+        String highLabel = currentLanguage.equals(LANG_ENGLISH) ? "High" : "Cao";
 
-        // Label "Cao" bên phải
-        canvas.drawText("Cao", centerX + dpToPx(30), bottomY, labelPaint);
+        // Label "Thấp"/"Low" bên trái
+        canvas.drawText(lowLabel, centerX - dpToPx(30), bottomY, labelPaint);
+
+        // Label "Cao"/"High" bên phải
+        canvas.drawText(highLabel, centerX + dpToPx(30), bottomY, labelPaint);
     }
 
     private void drawUpArrow(Canvas canvas) {
@@ -239,5 +254,11 @@ public class PressureGaugeView extends View {
     // Phương thức để lấy giá trị áp suất hiện tại
     public float getPressure() {
         return pressure;
+    }
+
+    // Phương thức để cập nhật ngôn ngữ
+    public void setLanguage(String language) {
+        this.currentLanguage = language;
+        invalidate(); // Vẽ lại view để cập nhật nhãn
     }
 }

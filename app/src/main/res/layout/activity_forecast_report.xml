@@ -1347,8 +1347,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="--°"
-                    android:textColor="#000000"
+
                     android:textSize="20sp"
+                    android:textColor="#FFFFFF"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -1392,8 +1393,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="--%"
-                    android:textColor="#000000"
+
                     android:textSize="36sp"
+                    android:textColor="#FFFFFF"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -1445,8 +1447,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="data"
-                android:textColor="#000000"
                 android:textSize="20sp"
+                android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -1496,7 +1498,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="data"
-                        android:textColor="#000000"
+                        android:textColor="#FFFFFF"
                         android:textSize="28sp"
                         android:textStyle="bold" />
 

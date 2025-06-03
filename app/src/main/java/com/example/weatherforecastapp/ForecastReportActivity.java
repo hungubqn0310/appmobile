@@ -810,6 +810,13 @@ public class ForecastReportActivity extends BaseActivity {
             currentLanguage = LANG_ENGLISH;
             saveLanguageSetting();
             updateLabels();
+
+            // Actualizar el idioma en PressureGaugeView
+            PressureGaugeView pressureGaugeView = findViewById(R.id.pressureGaugeView);
+            if (pressureGaugeView != null) {
+                pressureGaugeView.setLanguage(LANG_ENGLISH);
+            }
+
             dialog.dismiss();
             reloadWeatherData(); // Tải lại dữ liệu với ngôn ngữ mới
             Toast.makeText(this, "Language changed to English", Toast.LENGTH_SHORT).show();
@@ -819,6 +826,13 @@ public class ForecastReportActivity extends BaseActivity {
             currentLanguage = LANG_VIETNAMESE;
             saveLanguageSetting();
             updateLabels();
+
+            // Actualizar el idioma en PressureGaugeView
+            PressureGaugeView pressureGaugeView = findViewById(R.id.pressureGaugeView);
+            if (pressureGaugeView != null) {
+                pressureGaugeView.setLanguage(LANG_VIETNAMESE);
+            }
+
             dialog.dismiss();
             reloadWeatherData(); // Tải lại dữ liệu với ngôn ngữ mới
             Toast.makeText(this, "Đã chọn Tiếng Việt", Toast.LENGTH_SHORT).show();

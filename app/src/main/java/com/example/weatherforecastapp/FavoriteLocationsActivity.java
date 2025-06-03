@@ -133,7 +133,7 @@ public class FavoriteLocationsActivity extends BaseActivity {
             put("CONNECTION_ERROR", "API connection error");
             put("GO_TO_WEATHER", "Going to weather in");
             put("DEFAULT_LOCATION", "Unable to get current location, using Hanoi");
-            put("SLIDE_TO_RETURN", "Swipe right to return");
+            put("SLIDE_TO_RETURN", "Swipe right to return →");
             put("NO_NETWORK", "No network connection");
             put("FAVORITE_LOCATIONS", "Favorite Locations");
         }};
