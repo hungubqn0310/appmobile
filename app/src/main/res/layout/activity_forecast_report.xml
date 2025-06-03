@@ -129,9 +129,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -156,9 +157,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -183,9 +185,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -210,9 +213,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -237,9 +241,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -264,9 +269,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -291,9 +297,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -318,9 +325,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -345,9 +353,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -372,9 +381,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -399,9 +409,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -426,9 +437,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -454,9 +466,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -508,9 +521,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -535,9 +549,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -562,9 +577,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -589,9 +605,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -616,9 +633,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -643,9 +661,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -670,9 +689,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -697,9 +717,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -724,9 +745,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -751,9 +773,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -815,9 +838,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -846,9 +870,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -877,9 +902,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -908,9 +934,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -939,9 +966,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -970,9 +998,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -1001,9 +1030,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_cloud_sun" />
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_cloud_sun"
+    android:tag="weather_icon" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -1154,7 +1184,8 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:src="@drawable/ic_moon_phase"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"
+                    android:tag="weather_icon"/>
 
                 <!-- Mặt trăng lặn -->
                 <LinearLayout

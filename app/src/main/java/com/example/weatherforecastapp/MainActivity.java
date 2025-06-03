@@ -483,8 +483,8 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
     }
     private void updateLabels() {
         // Cập nhật các label theo ngôn ngữ hiện tại
-        String windLabel = currentLanguage.equals(LANG_ENGLISH) ? "Wind Speed:" : "Tốc độ gió:";
-        String humidityLabel = currentLanguage.equals(LANG_ENGLISH) ? "Humidity:" : "Độ ẩm:";
+        String windLabel = currentLanguage.equals(LANG_ENGLISH) ? "Wind Speed |" : "Tốc độ gió |";
+        String humidityLabel = currentLanguage.equals(LANG_ENGLISH) ? "Humidity |" : "Độ ẩm |";
 
         if (tvWindLabel != null) {
             tvWindLabel.setText(windLabel);

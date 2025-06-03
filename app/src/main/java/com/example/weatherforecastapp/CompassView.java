@@ -10,11 +10,12 @@ import android.util.AttributeSet;
 import android.view.View;
 import java.util.Locale;
 
-public class CompassView extends View {
+public class CompassView extends View implements ThemeAware {
     private Paint textPaint, arrowPaint, linePaint;
     private float centerX, centerY, radius;
-    private float windDirection = 0f; // Góc hướng gió (0-360)
+    private float windDirection = 0f;
     private String windSpeed = "--\nkm/h";
+    private boolean isDarkTheme = false;
 
     public CompassView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -22,22 +23,35 @@ public class CompassView extends View {
     }
 
     private void init() {
+        initPaints();
+    }
+
+    private void initPaints() {
+        int primaryColor = isDarkTheme ? Color.WHITE : Color.BLACK;
+
         // Paint cho text
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(Color.BLACK);
+        textPaint.setColor(primaryColor);
         textPaint.setTextSize(dpToPx(12));
         textPaint.setTextAlign(Paint.Align.CENTER);
 
         // Paint cho mũi tên
         arrowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        arrowPaint.setColor(Color.BLACK);
+        arrowPaint.setColor(primaryColor);
         arrowPaint.setStrokeWidth(dpToPx(2));
         arrowPaint.setStyle(Paint.Style.STROKE);
 
         // Paint cho các vạch chia
         linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        linePaint.setColor(Color.BLACK);
+        linePaint.setColor(primaryColor);
         linePaint.setStrokeWidth(dpToPx(1));
+    }
+
+    @Override
+    public void applyTheme(boolean isDarkTheme) {
+        this.isDarkTheme = isDarkTheme;
+        initPaints();
+        invalidate();
     }
 
     @Override
@@ -58,7 +72,7 @@ public class CompassView extends View {
         // Vẽ các vạch chia độ
         drawTickMarks(canvas);
 
-        // Vẽ mũi tên hướng gió (vẽ trước text để text đè lên)
+        // Vẽ mũi tên hướng gió
         drawWindArrow(canvas);
 
         // Vẽ text tốc độ gió
@@ -82,7 +96,7 @@ public class CompassView extends View {
 
     private void drawTickMarks(Canvas canvas) {
         for (int i = 0; i < 360; i += 30) {
-            if (i % 90 != 0) { // Không vẽ vạch tại vị trí N,S,E,W
+            if (i % 90 != 0) {
                 float angle = (float) Math.toRadians(i - 90);
                 float startX = centerX + (radius - dpToPx(10)) * (float) Math.cos(angle);
                 float startY = centerY + (radius - dpToPx(10)) * (float) Math.sin(angle);
@@ -95,21 +109,17 @@ public class CompassView extends View {
 
     private void drawWindArrow(Canvas canvas) {
         canvas.save();
-        // Mũi tên chỉ hướng GIÓ THỔI ĐẾN (wind direction), không phải hướng gió thổi đi
-        // Vì vậy chúng ta cần xoay thêm 180 độ
         canvas.rotate(windDirection + 180, centerX, centerY);
 
-        // Tính toán khoảng cách để tránh đè lên text
-        float textAreaRadius = dpToPx(20); // Khoảng trống cho text ở giữa
+        float textAreaRadius = dpToPx(20);
 
-        // === VẼ PHẦN ĐẦU MŨI TÊN (TRÊN) ===
-        // Thân mũi tên phía trên - dày hơn và đẹp hơn
+        // Vẽ phần đầu mũi tên
         arrowPaint.setStrokeWidth(dpToPx(3));
         arrowPaint.setStyle(Paint.Style.STROKE);
-        canvas.drawLine(centerX, centerY - dpToPx(45),
+        canvas.drawLine(centerX, centerY - dpToPx(40),
                 centerX, centerY - textAreaRadius, arrowPaint);
 
-        // Đầu mũi tên tam giác đầy - lớn và đẹp hơn
+        // Đầu mũi tên tam giác đầy
         Path arrowHead = new Path();
         arrowHead.moveTo(centerX, centerY - dpToPx(45));
         arrowHead.lineTo(centerX - dpToPx(8), centerY - dpToPx(30));
@@ -119,16 +129,11 @@ public class CompassView extends View {
         arrowPaint.setStyle(Paint.Style.FILL);
         canvas.drawPath(arrowHead, arrowPaint);
 
-        // === VẼ PHẦN ĐUÔI MŨI TÊN (DƯỚI) ===
-        // Thân mũi tên phía dưới
+        // Vẽ phần đuôi mũi tên
         arrowPaint.setStyle(Paint.Style.STROKE);
         arrowPaint.setStrokeWidth(dpToPx(3));
         canvas.drawLine(centerX, centerY + textAreaRadius,
                 centerX, centerY + dpToPx(35), arrowPaint);
-
-
-
-
 
         canvas.restore();
     }
@@ -136,7 +141,6 @@ public class CompassView extends View {
     private void drawWindSpeed(Canvas canvas) {
         textPaint.setTextSize(dpToPx(12));
         textPaint.setTypeface(Typeface.DEFAULT);
-        textPaint.setColor(Color.BLACK);
 
         String[] lines = windSpeed.split("\n");
         float lineHeight = textPaint.getTextSize() + dpToPx(2);
@@ -152,24 +156,17 @@ public class CompassView extends View {
         return dp * getResources().getDisplayMetrics().density;
     }
 
-    // Phương thức để cập nhật hướng và tốc độ gió từ API
     public void setWindData(float speedKph, String windDirectionStr) {
-        // Chuyển đổi hướng gió từ string sang degrees
         this.windDirection = convertWindDirectionToDegrees(windDirectionStr);
-
-        // Format tốc độ gió
         this.windSpeed = String.format(Locale.getDefault(), "%.0f\nkm/h", speedKph);
-
-        invalidate(); // Vẽ lại view
+        invalidate();
     }
 
-    // Phương thức chuyển đổi hướng gió từ string (N, NE, E, etc.) sang degrees
     private float convertWindDirectionToDegrees(String direction) {
         if (direction == null || direction.isEmpty()) {
             return 0f;
         }
 
-        // API trả về hướng gió thổi ĐẾN (wind direction)
         switch (direction.toUpperCase().trim()) {
             case "N": case "BẮC": return 0f;
             case "NNE": case "BĐB": return 22.5f;
@@ -188,7 +185,6 @@ public class CompassView extends View {
             case "NW": case "TB": case "TÂY BẮC": return 315f;
             case "NNW": return 337.5f;
             default:
-                // Nếu không nhận diện được, thử parse như số
                 try {
                     return Float.parseFloat(direction);
                 } catch (NumberFormatException e) {
@@ -197,7 +193,6 @@ public class CompassView extends View {
         }
     }
 
-    // Phương thức backup nếu bạn muốn set trực tiếp bằng degrees
     public void setWindDataDegrees(float speedKph, float directionDegrees) {
         this.windDirection = directionDegrees;
         this.windSpeed = String.format(Locale.getDefault(), "%.0f\nkm/h", speedKph);

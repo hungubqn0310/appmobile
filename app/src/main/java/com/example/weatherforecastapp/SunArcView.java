@@ -2,6 +2,7 @@ package com.example.weatherforecastapp;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
@@ -9,11 +10,13 @@ import android.util.TypedValue;
 import android.view.View;
 import java.util.Calendar;
 
-public class SunArcView extends View {
+public class SunArcView extends View implements ThemeAware {
     private Paint arcPaint;
     private Paint sunPaint;
     private Paint grayArcPaint;
     private Paint textPaint;
+    private boolean isDarkTheme = false;
+
     // Thêm biến để lưu thời gian hiện tại
     private int currentHour = 0;
     private int currentMinute = 0;
@@ -40,6 +43,55 @@ public class SunArcView extends View {
         super(context, attrs, defStyleAttr);
         init();
     }
+
+    private void init() {
+        initPaints();
+        arcRect = new RectF();
+    }
+
+    private void initPaints() {
+        // Paint cho đường cung màu vàng
+        arcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        arcPaint.setColor(0xFFFFA500);
+        arcPaint.setStyle(Paint.Style.STROKE);
+        arcPaint.setStrokeWidth(8f);
+        arcPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        // Paint cho đường cung màu xám
+        grayArcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        grayArcPaint.setColor(isDarkTheme ? 0x66FFFFFF : 0x66000000); // Xám trong suốt theo theme
+        grayArcPaint.setStyle(Paint.Style.STROKE);
+        grayArcPaint.setStrokeWidth(8f);
+        grayArcPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        // Paint cho điểm mặt trời
+        sunPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        sunPaint.setColor(0xFFFFA500);
+        sunPaint.setStyle(Paint.Style.FILL);
+        sunPaint.setShadowLayer(12f, 0f, 0f, 0xFFFFD700); // Hiệu ứng phát sáng
+
+        // Paint cho text thời gian hiện tại
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Thay đổi màu theo theme
+
+        // Thiết lập kích thước chữ theo đơn vị sp, ví dụ 18sp
+        float textSizeSp = 16f;
+        float textSizePx = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                textSizeSp,
+                getResources().getDisplayMetrics()
+        );
+        textPaint.setTextSize(textSizePx);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+    }
+
+    @Override
+    public void applyTheme(boolean isDarkTheme) {
+        this.isDarkTheme = isDarkTheme;
+        initPaints();
+        invalidate();
+    }
+
     // Thêm phương thức để set thời gian hiện tại từ API
     public void setCurrentTime(String timeString) {
         try {
@@ -53,6 +105,7 @@ public class SunArcView extends View {
             e.printStackTrace();
         }
     }
+
     // Thêm phương thức mới để cập nhật vị trí với thời gian cụ thể
     private void updateSunPositionWithTime(int hour, int minute) {
         int currentTimeInMinutes = hour * 60 + minute;
@@ -73,46 +126,6 @@ public class SunArcView extends View {
 
         sunPosition = Math.max(0f, Math.min(1f, sunPosition));
         invalidate();
-    }
-    private void init() {
-        // Paint cho đường cung màu vàng
-        arcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        arcPaint.setColor(0xFFFFA500);
-        arcPaint.setStyle(Paint.Style.STROKE);
-        arcPaint.setStrokeWidth(8f);
-        arcPaint.setStrokeCap(Paint.Cap.ROUND);
-
-        // Paint cho đường cung màu xám
-        grayArcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        grayArcPaint.setColor(0x66FFFFFF); // Màu trắng trong suốt
-        grayArcPaint.setStyle(Paint.Style.STROKE);
-        grayArcPaint.setStrokeWidth(8f);
-        grayArcPaint.setStrokeCap(Paint.Cap.ROUND);
-
-        // Paint cho điểm mặt trời
-        sunPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        sunPaint.setColor(0xFFFFA500);
-        sunPaint.setStyle(Paint.Style.FILL);
-        sunPaint.setShadowLayer(12f, 0f, 0f, 0xFFFFD700); // Hiệu ứng phát sáng
-
-        // Paint cho text thời gian hiện tại
-        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(0xFFFFFFFF);
-
-        // Thiết lập kích thước chữ theo đơn vị sp, ví dụ 18sp
-        float textSizeSp = 16f;
-        float textSizePx = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP,
-                textSizeSp,
-                getResources().getDisplayMetrics()
-        );
-        textPaint.setTextSize(textSizePx);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-
-        arcRect = new RectF();
-
-        // Không cập nhật ngay vì chưa có dữ liệu từ API
-        // updateSunPosition() sẽ được gọi sau khi có dữ liệu từ API
     }
 
     @Override
@@ -167,8 +180,6 @@ public class SunArcView extends View {
 
             canvas.drawText(currentTimeText, textX, textY, textPaint);
         }
-
-
 
         // Vẽ nhãn bình minh và hoàng hôn
         float baseY = arcRect.bottom + 20f;
