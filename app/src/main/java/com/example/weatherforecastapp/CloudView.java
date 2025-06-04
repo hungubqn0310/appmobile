@@ -23,6 +23,15 @@ public class CloudView extends View {
     private float cloud4Speed = 0.6f;
     private float cloud5Speed = 0.4f;
 
+    // Kiểu mây (NORMAL, DARK, LIGHT)
+    private CloudType cloudType = CloudType.NORMAL;
+
+    public enum CloudType {
+        NORMAL,  // Mây bình thường
+        DARK,    // Mây tối (mưa, giông)
+        LIGHT    // Mây sáng (nắng)
+    }
+
     public CloudView(Context context) {
         super(context);
         init();
@@ -100,7 +109,13 @@ public class CloudView extends View {
         // Vẽ bóng đổ phía dưới mây
         Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         shadowPaint.setStyle(Paint.Style.FILL);
-        shadowPaint.setColor(Color.argb(30, 0, 0, 0)); // Bóng mờ đen
+
+        // Bóng đậm hơn cho mây tối
+        if (cloudType == CloudType.DARK) {
+            shadowPaint.setColor(Color.argb(60, 0, 0, 0)); // Bóng đậm hơn
+        } else {
+            shadowPaint.setColor(Color.argb(30, 0, 0, 0)); // Bóng mờ đen
+        }
 
         // Vẽ bóng (dịch xuống dưới và sang phải một chút)
         float shadowOffset = radius * 0.1f;
@@ -117,26 +132,49 @@ public class CloudView extends View {
         // Các phần khác nhau của mây với màu sắc khác nhau
         int alphaValue = (int)(alpha * 255);
 
+        // Màu sắc thay đổi theo loại mây
+        int topColor, midColor, bottomColor, darkBottomColor;
+
+        switch (cloudType) {
+            case DARK:
+                // Mây tối cho mưa/giông
+                topColor = Color.argb(alphaValue, 140, 140, 150);
+                midColor = Color.argb(alphaValue, 120, 120, 130);
+                bottomColor = Color.argb(alphaValue, 100, 100, 110);
+                darkBottomColor = Color.argb(alphaValue, 80, 80, 90);
+                break;
+            case LIGHT:
+                // Mây sáng cho nắng
+                topColor = Color.argb(alphaValue, 255, 255, 255);
+                midColor = Color.argb(alphaValue, 250, 250, 255);
+                bottomColor = Color.argb(alphaValue, 240, 240, 245);
+                darkBottomColor = Color.argb(alphaValue, 220, 220, 230);
+                break;
+            default:
+                // Mây bình thường
+                topColor = Color.argb(alphaValue, 255, 255, 255);
+                midColor = Color.argb(alphaValue, 245, 245, 250);
+                bottomColor = Color.argb(alphaValue, 235, 235, 240);
+                darkBottomColor = Color.argb(alphaValue, 200, 200, 210);
+                break;
+        }
+
         // Phần sáng nhất (trên cùng)
-        cloudPaint.setColor(Color.argb(alphaValue, 255, 255, 255));
+        cloudPaint.setColor(topColor);
         canvas.drawCircle(centerX, centerY - rSmall * 0.8f, rMain, cloudPaint);
 
-        // Phần trung gian (có chút xám)
-        cloudPaint.setColor(Color.argb(alphaValue, 245, 245, 250));
+        // Phần trung gian
+        cloudPaint.setColor(midColor);
         canvas.drawCircle(centerX - rMain * 0.5f, centerY - rSmall * 0.6f, rMain * 0.75f, cloudPaint);
         canvas.drawCircle(centerX + rMain * 0.7f, centerY - rSmall * 0.4f, rMain * 0.8f, cloudPaint);
 
-        // Phần tối hơn (dưới cùng - có bóng)
-        if (isDark) {
-            cloudPaint.setColor(Color.argb(alphaValue, 220, 220, 230));
-        } else {
-            cloudPaint.setColor(Color.argb(alphaValue, 235, 235, 240));
-        }
+        // Phần tối hơn (dưới cùng)
+        cloudPaint.setColor(bottomColor);
         canvas.drawCircle(centerX - rMain, centerY, rSmall, cloudPaint);
         canvas.drawCircle(centerX + rMain, centerY, rSmall * 0.9f, cloudPaint);
 
         // Phần đáy mây (tối nhất)
-        cloudPaint.setColor(Color.argb(alphaValue, 200, 200, 210));
+        cloudPaint.setColor(darkBottomColor);
         canvas.drawCircle(centerX - rMain * 0.5f, centerY + rSmall * 0.5f, rSmall * 0.9f, cloudPaint);
         canvas.drawCircle(centerX + rMain * 0.2f, centerY + rSmall * 0.5f, rSmall, cloudPaint);
 
@@ -144,25 +182,31 @@ public class CloudView extends View {
         Paint detailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         detailPaint.setStyle(Paint.Style.FILL);
 
-        // Vẽ thêm vài chi tiết nhỏ để tạo độ sâu
-        detailPaint.setColor(Color.argb((int)(alphaValue * 0.5), 180, 180, 190));
+        // Chi tiết nhỏ
+        if (cloudType == CloudType.DARK) {
+            detailPaint.setColor(Color.argb((int)(alphaValue * 0.5), 70, 70, 80));
+        } else {
+            detailPaint.setColor(Color.argb((int)(alphaValue * 0.5), 180, 180, 190));
+        }
         canvas.drawCircle(centerX - rMain * 0.3f, centerY + rSmall * 0.2f, rSmall * 0.3f, detailPaint);
         canvas.drawCircle(centerX + rMain * 0.4f, centerY - rSmall * 0.1f, rSmall * 0.25f, detailPaint);
 
-        // Highlight trên đỉnh mây
-        Paint highlightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        highlightPaint.setStyle(Paint.Style.FILL);
-        highlightPaint.setShader(new RadialGradient(
-                centerX, centerY - rSmall * 0.8f,
-                rMain * 0.8f,
-                new int[]{
-                        Color.argb((int)(alphaValue * 0.9), 255, 255, 255),
-                        Color.argb((int)(alphaValue * 0.3), 255, 255, 255)
-                },
-                null,
-                Shader.TileMode.CLAMP
-        ));
-        canvas.drawCircle(centerX, centerY - rSmall * 0.8f, rMain * 0.6f, highlightPaint);
+        // Highlight trên đỉnh mây (giảm cho mây tối)
+        if (cloudType != CloudType.DARK) {
+            Paint highlightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            highlightPaint.setStyle(Paint.Style.FILL);
+            highlightPaint.setShader(new RadialGradient(
+                    centerX, centerY - rSmall * 0.8f,
+                    rMain * 0.8f,
+                    new int[]{
+                            Color.argb((int)(alphaValue * 0.9), 255, 255, 255),
+                            Color.argb((int)(alphaValue * 0.3), 255, 255, 255)
+                    },
+                    null,
+                    Shader.TileMode.CLAMP
+            ));
+            canvas.drawCircle(centerX, centerY - rSmall * 0.8f, rMain * 0.6f, highlightPaint);
+        }
     }
 
     public void setCloudSpeed(float speedMultiplier) {
@@ -171,5 +215,11 @@ public class CloudView extends View {
         cloud3Speed = 0.3f * speedMultiplier;
         cloud4Speed = 0.6f * speedMultiplier;
         cloud5Speed = 0.4f * speedMultiplier;
+    }
+
+    // Phương thức mới để set loại mây
+    public void setCloudType(CloudType type) {
+        this.cloudType = type;
+        invalidate();
     }
 }

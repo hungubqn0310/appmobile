@@ -575,17 +575,6 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                 weatherCondition.toLowerCase().contains("snow") ||
                 weatherCondition.toLowerCase().contains("blizzard");
 
-        boolean hasCloud = weatherCondition.toLowerCase().contains("mây") ||
-                weatherCondition.toLowerCase().contains("cloud") ||
-                weatherCondition.toLowerCase().contains("overcast") ||
-                weatherCondition.toLowerCase().contains("u ám") ||
-                weatherCondition.toLowerCase().contains("âm u") ||
-                weatherCondition.toLowerCase().contains("u") ||
-                weatherCondition.toLowerCase().contains("ám") &&
-                        !weatherCondition.toLowerCase().contains("nắng") &&
-                        !weatherCondition.toLowerCase().contains("sunny") &&
-                        !weatherCondition.toLowerCase().contains("clear");
-
         // Reset tất cả hiệu ứng trước
         rainContainer.setVisibility(View.GONE);
         sunshineContainer.setVisibility(View.GONE);
@@ -608,15 +597,30 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                 weatherCondition.toLowerCase().contains("rào") ||
                 weatherCondition.toLowerCase().contains("shower");
 
-        // Xử lý hiệu ứng MƯA (kết hợp với mây)
+        // LUÔN HIỂN THỊ MÂY
+        cloudContainer.setVisibility(View.VISIBLE);
+
+        // Điều chỉnh loại mây và độ trong suốt theo thời tiết
+        if (hasRain) {
+            cloudView.setCloudType(CloudView.CloudType.DARK);
+            cloudContainer.setAlpha(0.9f); // Mây đậm hơn khi mưa
+        } else if (hasSnow) {
+            cloudView.setCloudType(CloudView.CloudType.DARK);
+            cloudContainer.setAlpha(0.85f); // Mây hơi tối khi tuyết
+        } else if (hasSun) {
+            cloudView.setCloudType(CloudView.CloudType.LIGHT);
+            cloudContainer.setAlpha(0.6f); // Mây nhạt hơn khi nắng
+        } else {
+            cloudView.setCloudType(CloudView.CloudType.NORMAL);
+            cloudContainer.setAlpha(0.8f); // Mây bình thường
+        }
+
+        // XỬ LÝ HIỆU ỨNG CHÍNH (chỉ chọn 1 trong 3)
+        // Ưu tiên: Mưa > Tuyết > Nắng
         if (hasRain) {
             // Hiển thị mưa
             rainContainer.setVisibility(View.VISIBLE);
             rainView.startRain();
-
-            // Luôn hiển thị mây khi có mưa
-            cloudContainer.setVisibility(View.VISIBLE);
-            cloudContainer.setAlpha(0.8f);
 
             // Điều chỉnh cường độ mưa
             int intensity = 150;
@@ -626,37 +630,35 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
             } else if (isHeavy) {
                 intensity = 250;
                 rainView.setThunderEnabled(true);
+                // Mây tối hơn khi mưa to
+                cloudView.setCloudType(CloudView.CloudType.DARK);
+                cloudContainer.setAlpha(0.95f);
             } else {
                 rainView.setThunderEnabled(true);
             }
             rainView.setRainIntensity(intensity);
         }
-        // Xử lý hiệu ứng MÂY (độc lập khi không có mưa)
-        else if (hasCloud) {
-            cloudContainer.setVisibility(View.VISIBLE);
-            cloudContainer.setAlpha(1.0f);
-        }
-
-        // Xử lý hiệu ứng NẮNG (độc lập)
-        if (hasSun && !hasRain && !hasSnow && !hasCloud) {
-            sunshineContainer.setVisibility(View.VISIBLE);
-            sunshineContainer.setAlpha(1.0f);
-        }
-
-        // Xử lý hiệu ứng TUYẾT (độc lập)
-        if (hasSnow && !hasRain && !hasSun) {
+        else if (hasSnow) {
+            // Hiển thị tuyết
             snowContainer.setVisibility(View.VISIBLE);
             snowView.startSnow();
-            snowContainer.setAlpha(1.0f);
 
             int intensity = 150;
             if (isLight) {
                 intensity = 80;
             } else if (isHeavy) {
                 intensity = 250;
+                // Mây đậm hơn khi tuyết dày
+                cloudContainer.setAlpha(0.9f);
             }
             snowView.setSnowIntensity(intensity);
         }
+        else if (hasSun) {
+            // Hiển thị nắng
+            sunshineContainer.setVisibility(View.VISIBLE);
+            sunshineContainer.setAlpha(1.0f);
+        }
+        // Nếu không có hiệu ứng nào, chỉ hiển thị mây (đã set ở trên)
     }
 
 // Không cần handleSpecialCombinations nữa vì chỉ có rain+cloud kết hợp
