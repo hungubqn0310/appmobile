@@ -565,11 +565,16 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
                 weatherCondition.toLowerCase().contains("giông") ||
                 weatherCondition.toLowerCase().contains("rain");
 
-        boolean hasSun = weatherCondition.toLowerCase().contains("nắng") ||
+
+
+        boolean hasSun = weatherCondition.contains("Nhiều nắng") ||
+                weatherCondition.contains("nhiều nắng") ||
+                weatherCondition.contains("Nắng") ||
+                weatherCondition.contains("nắng") ||
                 weatherCondition.toLowerCase().contains("sunny") ||
-                weatherCondition.toLowerCase().contains("sun") ||
-                weatherCondition.toLowerCase().contains("nhiều nắng") ||
-                weatherCondition.toLowerCase().contains("partly sunny");
+                weatherCondition.toLowerCase().contains("sun");
+        Log.d("weatherCondition",weatherCondition);
+        Log.d("hasSun", String.valueOf(hasSun));
 
         boolean hasSnow = weatherCondition.toLowerCase().contains("tuyết") ||
                 weatherCondition.toLowerCase().contains("snow") ||
@@ -655,6 +660,9 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         }
         else if (hasSun) {
             // Hiển thị nắng
+            // Debug
+            Log.d("WeatherEffect", "Showing sunshine effect");
+            Log.d("WeatherEffect", "Weather condition: " + weatherCondition);
             sunshineContainer.setVisibility(View.VISIBLE);
             sunshineContainer.setAlpha(1.0f);
         }
