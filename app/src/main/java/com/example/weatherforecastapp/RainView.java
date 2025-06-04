@@ -44,8 +44,9 @@ public class RainView extends View {
         random = new Random();
 
         paint = new Paint();
-        paint.setColor(Color.argb(180, 200, 200, 255)); // Màu hơi xanh nhạt, hơi trong suốt
-        paint.setStrokeWidth(2);
+        // Màu trắng đậm
+        paint.setColor(Color.argb(220, 255, 255, 255));
+        paint.setStrokeWidth(3); // Tăng độ dày từ 2 lên 3
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setAntiAlias(true);
@@ -74,7 +75,8 @@ public class RainView extends View {
         float length = MIN_RAIN_LENGTH + random.nextFloat() * (MAX_RAIN_LENGTH - MIN_RAIN_LENGTH);
         float speed = MIN_RAIN_SPEED + random.nextFloat() * (MAX_RAIN_SPEED - MIN_RAIN_SPEED);
         float angle = 80; // Góc rơi từ 70-90 độ
-        int alpha = 100 + random.nextInt(155); // Độ trong suốt ngẫu nhiên
+        // Tăng độ đậm alpha: từ 100-155 lên 150-255
+        int alpha = 150 + random.nextInt(106);
         return new Raindrop(x, y, length, speed, angle, alpha);
     }
 
@@ -118,6 +120,15 @@ public class RainView extends View {
 
     public void setRainIntensity(int count) {
         createRaindrops(count);
+    }
+
+    // Phương thức mới để điều chỉnh độ đậm
+    public void setRainOpacity(int baseAlpha) {
+        paint.setColor(Color.argb(baseAlpha, 255, 255, 255)); // Màu trắng
+        // Cập nhật lại tất cả hạt mưa
+        for (Raindrop raindrop : raindrops) {
+            raindrop.alpha = Math.max(150, Math.min(255, baseAlpha + random.nextInt(50)));
+        }
     }
 
     // Lớp nội bộ để đại diện cho một hạt mưa
