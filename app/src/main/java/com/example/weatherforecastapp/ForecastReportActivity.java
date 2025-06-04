@@ -364,7 +364,9 @@ public class ForecastReportActivity extends BaseActivity {
             String[] dateTimeParts = localtime.split(" ");
             String currentDate = dateTimeParts[0];
             String currentTime = dateTimeParts[1]; // "14:30"
-            String currentHour = currentTime.split(":")[0] + ":00";
+
+            // Lấy giờ hiện tại (chỉ lấy giờ, không lấy phút)
+            int currentHourInt = Integer.parseInt(currentTime.split(":")[0]);
 
             // Extract current weather data
             JsonObject current = jsonObject.getAsJsonObject("current");
@@ -372,14 +374,14 @@ public class ForecastReportActivity extends BaseActivity {
             // Extract forecast data
             JsonArray forecastDays = jsonObject.getAsJsonObject("forecast").getAsJsonArray("forecastday");
 
-            // Process forecasts
-            ForecastData forecastData = processForecastData(forecastDays);
+            // Process forecasts - truyền thêm currentHourInt
+            ForecastData forecastData = processForecastData(forecastDays, currentHourInt);
 
             // Extract astro data
             AstroData astroData = extractAstroData(forecastDays);
 
-            // Update UI on main thread - truyền thêm currentTime
-            updateUIOnMainThread(currentDate, currentHour, currentTime, current, forecastData, astroData);
+            // Update UI on main thread
+            updateUIOnMainThread(currentDate, String.format("%02d:00", currentHourInt), currentTime, current, forecastData, astroData);
 
         } catch (Exception e) {
             handleApiError("Lỗi khi xử lý dữ liệu JSON: " + e.getMessage(), "Lỗi khi xử lý dữ liệu thời tiết");
@@ -399,7 +401,7 @@ public class ForecastReportActivity extends BaseActivity {
         }
     }
 
-    private ForecastData processForecastData(JsonArray forecastDays) {
+    private ForecastData processForecastData(JsonArray forecastDays, int currentHour) {
         List<DailyForecast> dailyForecasts = new ArrayList<>();
         List<HourlyForecast> hourlyForecasts = new ArrayList<>();
 
@@ -410,15 +412,57 @@ public class ForecastReportActivity extends BaseActivity {
             DailyForecast dailyForecast = processDailyForecast(dayForecast);
             dailyForecasts.add(dailyForecast);
 
-            // Process hourly forecast for first day only
+            // Process hourly forecast - lấy từ giờ hiện tại trở đi
             if (i == 0) {
-                hourlyForecasts = processHourlyForecast(dayForecast);
+                // Ngày hôm nay - lấy từ giờ hiện tại
+                hourlyForecasts.addAll(processHourlyForecastFromCurrentHour(dayForecast, currentHour));
+            } else if (i == 1 && hourlyForecasts.size() < MAX_HOURLY_ITEMS) {
+                // Nếu cần thêm giờ từ ngày mai
+                hourlyForecasts.addAll(processHourlyForecastForNextDay(dayForecast, MAX_HOURLY_ITEMS - hourlyForecasts.size()));
             }
         }
 
         return new ForecastData(dailyForecasts, hourlyForecasts);
     }
+    private List<HourlyForecast> processHourlyForecastFromCurrentHour(JsonObject dayForecast, int currentHour) {
+        List<HourlyForecast> hourlyForecasts = new ArrayList<>();
+        JsonArray hoursArray = dayForecast.getAsJsonArray("hour");
 
+        // Bắt đầu từ giờ hiện tại
+        for (int j = currentHour; j < hoursArray.size() && hourlyForecasts.size() < MAX_HOURLY_ITEMS; j++) {
+            JsonObject hourData = hoursArray.get(j).getAsJsonObject();
+            String time = hourData.get("time").getAsString();
+            double tempC = hourData.get("temp_c").getAsDouble();
+            String hourIconUrl = "https:" + hourData.getAsJsonObject("condition").get("icon").getAsString();
+
+            // Lấy giờ từ time string (format: "2025-01-15 14:00")
+            String hourOnly = time.substring(11, 16); // "14:00"
+
+            HourlyForecast hourlyForecast = new HourlyForecast(hourOnly, hourIconUrl, formatTemperature(tempC));
+            hourlyForecasts.add(hourlyForecast);
+        }
+
+        return hourlyForecasts;
+    }
+
+    private List<HourlyForecast> processHourlyForecastForNextDay(JsonObject dayForecast, int remainingSlots) {
+        List<HourlyForecast> hourlyForecasts = new ArrayList<>();
+        JsonArray hoursArray = dayForecast.getAsJsonArray("hour");
+
+        // Lấy từ đầu ngày mai
+        for (int j = 0; j < hoursArray.size() && j < remainingSlots; j++) {
+            JsonObject hourData = hoursArray.get(j).getAsJsonObject();
+            String time = hourData.get("time").getAsString();
+            double tempC = hourData.get("temp_c").getAsDouble();
+            String hourIconUrl = "https:" + hourData.getAsJsonObject("condition").get("icon").getAsString();
+            String hourOnly = time.substring(11, 16);
+
+            HourlyForecast hourlyForecast = new HourlyForecast(hourOnly, hourIconUrl, formatTemperature(tempC));
+            hourlyForecasts.add(hourlyForecast);
+        }
+
+        return hourlyForecasts;
+    }
     private DailyForecast processDailyForecast(JsonObject dayForecast) {
         String date = dayForecast.get("date").getAsString();
         JsonObject dayInfo = dayForecast.getAsJsonObject("day");
@@ -708,9 +752,40 @@ public class ForecastReportActivity extends BaseActivity {
         for (int i = 0; i < maxHours; i++) {
             LinearLayout hourlyItem = findHourlyItem(i + 1);
             if (hourlyItem != null) {
-                updateHourlyItem(hourlyItem, hourlyForecasts.get(i), currentHour);
+                HourlyForecast forecast = hourlyForecasts.get(i);
+                updateHourlyItem(hourlyItem, forecast, i == 0); // Highlight item đầu tiên
             }
         }
+
+        // Ẩn các item không sử dụng
+        for (int i = maxHours; i < MAX_HOURLY_ITEMS; i++) {
+            LinearLayout hourlyItem = findHourlyItem(i + 1);
+            if (hourlyItem != null) {
+                hourlyItem.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void updateHourlyItem(LinearLayout hourlyItem, HourlyForecast forecast, boolean isCurrentHour) {
+        TextView tempTextView = (TextView) hourlyItem.getChildAt(0);
+        ImageView iconImageView = (ImageView) hourlyItem.getChildAt(1);
+        TextView timeTextView = (TextView) hourlyItem.getChildAt(2);
+
+        tempTextView.setText(forecast.getTemperature());
+        timeTextView.setText(forecast.getTime());
+
+        // Highlight giờ hiện tại (item đầu tiên)
+        if (isCurrentHour) {
+            hourlyItem.setBackgroundResource(R.drawable.info_box_bg);
+            // Có thể thêm text "Hiện tại" hoặc "Now"
+            String nowText = currentLanguage.equals(LANG_ENGLISH) ? "Now" : "Hiện tại";
+            timeTextView.setText(nowText);
+        } else {
+            hourlyItem.setBackground(null);
+        }
+
+        // Load weather icon
+        Glide.with(this).load(forecast.getIconUrl()).into(iconImageView);
     }
 
     private void updateHourlyItem(LinearLayout hourlyItem, HourlyForecast forecast, String currentHour) {

@@ -67,6 +67,12 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
     FrameLayout notificationContainer;
     FrameLayout rainContainer;
     RainView rainView;
+    FrameLayout sunshineContainer;
+    SunshineView sunshineView;
+    FrameLayout snowContainer;
+    SnowView snowView;
+    FrameLayout cloudContainer;
+    CloudView cloudView;
     private Animation loadingAnimation;
     TextView tvWindLabel, tvHumidityLabel; // Thêm dòng này
     TextView tvSlide;
@@ -116,6 +122,10 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         notificationContainer = findViewById(R.id.notificationContainer);
         notificationBadge = findViewById(R.id.notificationBadge);
         rainContainer = findViewById(R.id.rainContainer);
+        sunshineContainer = findViewById(R.id.sunshineContainer);
+        snowContainer = findViewById(R.id.snowContainer);
+        cloudContainer = findViewById(R.id.cloudContainer);
+
         tvWindLabel = findViewById(R.id.tvWindLabel); // Thêm dòng này
         tvHumidityLabel = findViewById(R.id.tvHumidityLabel); // Thêm dòng này
 
@@ -124,6 +134,11 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
 
         // Khởi tạo hiệu ứng mưa
         setupRainEffect();
+        setupSunshineEffect();
+        setupSnowEffect();
+        setupCloudEffect();
+
+
         updateLabels();
         // Luôn hiển thị red dot khi mở app
         notificationBadge.setVisibility(View.VISIBLE);
@@ -292,6 +307,21 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         rainView = new RainView(this);
         rainContainer.addView(rainView);
         rainContainer.setVisibility(View.GONE);
+    }
+    private void setupSunshineEffect() {
+        sunshineView = new SunshineView(this);
+        sunshineContainer.addView(sunshineView);
+        sunshineContainer.setVisibility(View.GONE);
+    }
+    private void setupSnowEffect() {
+        snowView = new SnowView(this);
+        snowContainer.addView(snowView);
+        snowContainer.setVisibility(View.GONE);
+    }
+    private void setupCloudEffect() {
+        cloudView = new CloudView(this);
+        cloudContainer.addView(cloudView);
+        cloudContainer.setVisibility(View.GONE);
     }
 
     private boolean checkLocationPermission() {
@@ -479,7 +509,7 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         ivLove.setSelected(favoriteCities.contains(weather.location.name));
 
         updateBackground(weather.location.localtime);
-        updateRainEffect(weather.current.condition.text);
+        updateWeatherEffect(weather.current.condition.text);
     }
     private void updateLabels() {
         // Cập nhật các label theo ngôn ngữ hiện tại
@@ -528,27 +558,108 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
             fetchWeather(currentCity);
         }
     }
-    private void updateRainEffect(String weatherCondition) {
-        boolean isRaining = weatherCondition.toLowerCase().contains("mưa") ||
+    private void updateWeatherEffect(String weatherCondition) {
+        // Kiểm tra từng điều kiện thời tiết
+        boolean hasRain = weatherCondition.toLowerCase().contains("mưa") ||
+                weatherCondition.toLowerCase().contains("bão") ||
+                weatherCondition.toLowerCase().contains("giông") ||
                 weatherCondition.toLowerCase().contains("rain");
 
-        if (isRaining) {
+        boolean hasSun = weatherCondition.toLowerCase().contains("nắng") ||
+                weatherCondition.toLowerCase().contains("sunny") ||
+                weatherCondition.toLowerCase().contains("sun") ||
+                weatherCondition.toLowerCase().contains("nhiều nắng") ||
+                weatherCondition.toLowerCase().contains("partly sunny");
+
+        boolean hasSnow = weatherCondition.toLowerCase().contains("tuyết") ||
+                weatherCondition.toLowerCase().contains("snow") ||
+                weatherCondition.toLowerCase().contains("blizzard");
+
+        boolean hasCloud = weatherCondition.toLowerCase().contains("mây") ||
+                weatherCondition.toLowerCase().contains("cloud") ||
+                weatherCondition.toLowerCase().contains("overcast") ||
+                weatherCondition.toLowerCase().contains("u ám") ||
+                weatherCondition.toLowerCase().contains("âm u") ||
+                weatherCondition.toLowerCase().contains("u") ||
+                weatherCondition.toLowerCase().contains("ám") &&
+                        !weatherCondition.toLowerCase().contains("nắng") &&
+                        !weatherCondition.toLowerCase().contains("sunny") &&
+                        !weatherCondition.toLowerCase().contains("clear");
+
+        // Reset tất cả hiệu ứng trước
+        rainContainer.setVisibility(View.GONE);
+        sunshineContainer.setVisibility(View.GONE);
+        snowContainer.setVisibility(View.GONE);
+        cloudContainer.setVisibility(View.GONE);
+        rainView.stopRain();
+        snowView.stopSnow();
+
+        // Kiểm tra cường độ
+        boolean isLight = weatherCondition.toLowerCase().contains("nhẹ") ||
+                weatherCondition.toLowerCase().contains("light") ||
+                weatherCondition.toLowerCase().contains("phùn") ||
+                weatherCondition.toLowerCase().contains("drizzle");
+
+        boolean isHeavy = weatherCondition.toLowerCase().contains("to") ||
+                weatherCondition.toLowerCase().contains("nặng") ||
+                weatherCondition.toLowerCase().contains("heavy") ||
+                weatherCondition.toLowerCase().contains("mạnh") ||
+                weatherCondition.toLowerCase().contains("severe") ||
+                weatherCondition.toLowerCase().contains("rào") ||
+                weatherCondition.toLowerCase().contains("shower");
+
+        // Xử lý hiệu ứng MƯA (kết hợp với mây)
+        if (hasRain) {
+            // Hiển thị mưa
             rainContainer.setVisibility(View.VISIBLE);
             rainView.startRain();
+
+            // Luôn hiển thị mây khi có mưa
+            cloudContainer.setVisibility(View.VISIBLE);
+            cloudContainer.setAlpha(0.8f);
+
+            // Điều chỉnh cường độ mưa
             int intensity = 150;
-            if (weatherCondition.toLowerCase().contains("nhẹ") ||
-                    weatherCondition.toLowerCase().contains("light")) {
+            if (isLight) {
                 intensity = 80;
-            } else if (weatherCondition.toLowerCase().contains("to") ||
-                    weatherCondition.toLowerCase().contains("heavy")) {
+                rainView.setThunderEnabled(false);
+            } else if (isHeavy) {
                 intensity = 250;
+                rainView.setThunderEnabled(true);
+            } else {
+                rainView.setThunderEnabled(true);
             }
             rainView.setRainIntensity(intensity);
-        } else {
-            rainContainer.setVisibility(View.GONE);
-            rainView.stopRain();
+        }
+        // Xử lý hiệu ứng MÂY (độc lập khi không có mưa)
+        else if (hasCloud) {
+            cloudContainer.setVisibility(View.VISIBLE);
+            cloudContainer.setAlpha(1.0f);
+        }
+
+        // Xử lý hiệu ứng NẮNG (độc lập)
+        if (hasSun && !hasRain && !hasSnow && !hasCloud) {
+            sunshineContainer.setVisibility(View.VISIBLE);
+            sunshineContainer.setAlpha(1.0f);
+        }
+
+        // Xử lý hiệu ứng TUYẾT (độc lập)
+        if (hasSnow && !hasRain && !hasSun) {
+            snowContainer.setVisibility(View.VISIBLE);
+            snowView.startSnow();
+            snowContainer.setAlpha(1.0f);
+
+            int intensity = 150;
+            if (isLight) {
+                intensity = 80;
+            } else if (isHeavy) {
+                intensity = 250;
+            }
+            snowView.setSnowIntensity(intensity);
         }
     }
+
+// Không cần handleSpecialCombinations nữa vì chỉ có rain+cloud kết hợp
 
     private void showNotificationPopup() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
@@ -1029,12 +1140,17 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         if (rainContainer.getVisibility() == View.VISIBLE) {
             rainView.startRain();
         }
+        if (snowContainer.getVisibility() == View.VISIBLE) {
+            snowView.startSnow();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         rainView.stopRain();
+        snowView.stopSnow();
+
     }
 
     @Override
@@ -1042,6 +1158,9 @@ public class MainActivity extends BaseActivity { // Thay đổi từ AppCompatAc
         super.onDestroy();
         if (rainView != null) {
             rainView.stopRain();
+        }
+        if (snowView != null) {
+            snowView.stopSnow();
         }
     }
 }
